@@ -20,9 +20,9 @@ class Settings(BaseSettings):
     object_storage_bucket: str | None = None
 
     mineru_enabled: bool = True
-    mineru_command: str = "mineru"
+    mineru_command: str = "mineru-kit"
     mineru_output_dir: Path = Path("storage/mineru_outputs")
-    mineru_backend: str = "pipeline"
+    mineru_ocr_mode: str = "auto"
     mineru_timeout_seconds: int = 900
     chandra_enabled: bool = True
     vintern_enabled: bool = False

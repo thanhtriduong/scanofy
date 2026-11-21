@@ -61,7 +61,7 @@ Tài liệu đầu vào
 
 - [x] Git monorepo Scanofy đã quản lý `fe`, `be`, `ai` và tài liệu ở thư mục gốc.
 - [x] Python 3.11 và các direct dependency đã được chốt phiên bản.
-- [ ] MinerU chưa khả dụng ổn định trên `PATH`.
+- [x] MinerU 4.2.3 chạy qua `mineru-kit` trong `be/.venv`.
 - [x] Docker Compose, backend và README cùng dùng `be/.env`.
 - [ ] File Profiler vẫn dùng dữ liệu giả định.
 - [ ] MinerU normalizer hiện gom toàn tài liệu thành một page và một block.
@@ -92,7 +92,7 @@ Tài liệu đầu vào
 - [x] Chốt `be/.env` và cập nhật README/Docker Compose.
 - [x] Kiểm tra kết nối PostgreSQL/Neon.
 - [x] Chạy `alembic upgrade head` thành công (`202606270001`, head).
-- [ ] Cài MinerU trong môi trường riêng và chạy được `mineru --help`.
+- [x] Cài MinerU 4.2.3 và chạy được local CLI `mineru-kit parse`.
 - [x] Chạy frontend trong `fe`: lint và production build.
 - [x] Chạy backend trong `be`: health check và OpenAPI qua ASGI smoke test.
 
@@ -257,7 +257,7 @@ Không bắt đầu viewer hoặc AI feature trước khi dữ liệu bbox đư�
 Thứ tự thực hiện gần nhất:
 
 1. [x] Thiết lập Git monorepo và baseline commit an toàn.
-2. [ ] Chuẩn hóa `.env`, Python virtualenv và MinerU CLI (chỉ còn MinerU CLI).
+2. [x] Chuẩn hóa `.env`, Python virtualenv và MinerU CLI.
 3. [ ] Chốt Page/Block/Span schema.
 4. [ ] Viết fixture từ một output MinerU hiện có.
 5. [ ] Viết MinerU normalizer thật.
@@ -288,11 +288,10 @@ Thứ tự thực hiện gần nhất:
   - Thống nhất cấu hình backend tại `be/.env`; xác nhận migration Neon ở head.
   - Thêm backend tests, upload cleanup và script kiểm tra toàn dự án.
   - Chạy thành công backend tests, frontend lint và production build.
+  - Cập nhật adapter cho MinerU 4.2.3 và xác minh PDF thật đi đến `parsed`.
 - Đang làm:
   - Chốt data contract Page/Block/Span để bắt đầu Batch 2.
 - Blocker:
-  - MinerU chưa có trên `PATH` hiện tại.
   - Normalizer chưa giữ page/block/span/bbox thực tế.
 - Tiếp theo:
-  - Cài MinerU trong môi trường riêng.
   - Bắt đầu mục 3 trong phần "Việc triển khai ngay tiếp theo".

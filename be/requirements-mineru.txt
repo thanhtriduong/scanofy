@@ -1,5 +1,4 @@
-# MinerU is intentionally kept separate from the core API requirements.
+# Optional MinerU dependencies; install them into be/.venv after the core requirements.
 # Official MinerU docs currently recommend Python 3.10-3.13.
 # On Windows, Python 3.10-3.12 is the safer target because of dependency support.
-uv
-mineru[all]
+mineru[all]==4.2.3

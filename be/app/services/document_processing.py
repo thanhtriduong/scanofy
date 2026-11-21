@@ -83,7 +83,7 @@ class DocumentProcessingService:
             document = self.db.get(Document, document_id)
             if job is not None:
                 job.status = "failed"
-                job.error_message = str(exc)
+                job.error_message = str(exc).strip() or type(exc).__name__
                 job.finished_at = datetime.now(timezone.utc)
             if document is not None:
                 document.status = "failed"

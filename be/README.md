@@ -41,33 +41,30 @@ python -m pytest
 - `GET /documents/{document_id}/status`
 - `DELETE /documents/{document_id}`
 
-OCR, normalization, hierarchy building, RAG, and education features are placeholders only.
+MinerU parsing is operational. Page/block normalization is still minimal;
+hierarchy building, RAG, and education features remain placeholders.
 
 ## MinerU Integration
 
-Week 2 integrates MinerU through the `mineru` CLI instead of importing it into
-the FastAPI process. Keep MinerU in a separate Python 3.10-3.12 environment on
-Windows, then expose the `mineru` command on `PATH`.
+MinerU 4.2.3 is invoked through its local `mineru-kit` CLI. It may be installed
+in the backend virtual environment when a single environment is preferred.
 
 ```powershell
-py -3.12 -m venv .venv-mineru
-.\.venv-mineru\Scripts\activate
-python -m pip install --upgrade pip
-pip install uv
-uv pip install -U "mineru[all]"
-mineru --help
+.\.venv\Scripts\python.exe -m pip install -r requirements-mineru.txt
+.\.venv\Scripts\mineru-kit.exe parse --help
 ```
 
 Configure the backend:
 
 ```env
 MINERU_ENABLED=true
-MINERU_COMMAND=mineru
+MINERU_COMMAND=mineru-kit
 MINERU_OUTPUT_DIR=storage/mineru_outputs
-MINERU_BACKEND=pipeline
+MINERU_OCR_MODE=auto
 MINERU_TIMEOUT_SECONDS=900
 ```
 
-For CPU-only machines, `pipeline` is the safest backend. Once the CLI is
-available, PDF/DOCX uploads routed to MinerU are parsed, stored in
+The adapter uses local parsing with automatic OCR mode and exports a ZIP that
+contains Markdown, middle JSON, structured JSON, and image assets. PDF/DOCX
+uploads routed to MinerU are parsed, stored in
 `ocr_outputs`, and minimally normalized into `pages` and `blocks`.
