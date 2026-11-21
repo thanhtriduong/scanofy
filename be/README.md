@@ -5,7 +5,7 @@ Week 1 backend scaffold for the Vietnamese Educational Document Intelligence Sys
 ## Run Locally
 
 ```bash
-cd backend
+cd be
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt

@@ -524,7 +524,7 @@ POST /documents/{document_id}/ask
 
 ```text
 scanofy/
-├── backend/
+├── be/
 │   ├── app/
 │   │   ├── main.py
 │   │   ├── api/
@@ -541,12 +541,21 @@ scanofy/
 │   ├── Dockerfile
 │   └── docker-compose.yml
 │
-├── frontend/
+├── fe/
 │   ├── app/
 │   ├── components/
 │   ├── lib/
 │   ├── types/
 │   └── package.json
+│
+├── ai/
+│   ├── adapters/
+│   ├── profiling/
+│   ├── normalization/
+│   ├── post_correction/
+│   ├── evaluation/
+│   ├── tests/
+│   └── README.md
 │
 ├── sample_documents/
 ├── docs/

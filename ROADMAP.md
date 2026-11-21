@@ -55,11 +55,11 @@ Tài liệu đầu vào
 - [x] Background task placeholder cho pipeline xử lý.
 - [x] MinerU CLI adapter cơ bản.
 - [x] API đọc OCR output, pages và blocks.
-- [x] Đã có artifact MinerU thực tế trong `backend/storage/mineru_outputs`.
+- [x] Đã có artifact MinerU thực tế trong `be/storage/mineru_outputs`.
 
 ### Chưa hoàn thiện
 
-- [x] Git monorepo Scanofy đã quản lý frontend, backend và tài liệu ở thư mục gốc.
+- [x] Git monorepo Scanofy đã quản lý `fe`, `be`, `ai` và tài liệu ở thư mục gốc.
 - [ ] Môi trường Python và `requirements.txt` chưa đồng bộ phiên bản.
 - [ ] MinerU chưa khả dụng ổn định trên `PATH`.
 - [ ] Docker Compose và vị trí `.env` chưa thống nhất.
@@ -86,15 +86,15 @@ Tài liệu đầu vào
 
 ### 4.2. Chuẩn hóa môi trường
 
-- [ ] Chọn phiên bản Python chính thức cho backend.
-- [ ] Tạo lại `backend/.venv` từ `requirements.txt`.
+- [ ] Chọn phiên bản Python chính thức cho backend trong `be`.
+- [ ] Tạo lại `be/.venv` từ `requirements.txt`.
 - [ ] Đồng bộ phiên bản FastAPI trong requirements và virtualenv.
 - [ ] Chốt một vị trí `.env` duy nhất và cập nhật README/Docker Compose.
 - [ ] Kiểm tra kết nối PostgreSQL/Neon.
 - [ ] Chạy `alembic upgrade head` thành công.
 - [ ] Cài MinerU trong môi trường riêng và chạy được `mineru --help`.
-- [ ] Chạy frontend lint và production build.
-- [ ] Chạy backend health check và OpenAPI.
+- [ ] Chạy frontend trong `fe`: lint và production build.
+- [ ] Chạy backend trong `be`: health check và OpenAPI.
 
 ### 4.3. Chốt data contract
 
@@ -104,7 +104,7 @@ Tài liệu đầu vào
 - [ ] Thêm cờ `is_handwritten`, `needs_review` và `quality_score`.
 - [ ] Quy định hệ tọa độ bbox và cách scale lên PDF.js viewer.
 - [ ] Quy định mapping block type giữa MinerU, PaddleOCR, Chandra và Vintern.
-- [ ] Tạo fixture JSON chuẩn dùng chung cho backend và frontend.
+- [ ] Tạo fixture JSON chuẩn dùng chung cho `be`, `fe` và `ai`.
 
 ### 4.4. Thiết lập kiểm thử
 
@@ -121,14 +121,14 @@ Tài liệu đầu vào
 **Mục tiêu:** dựng lại và chạy dự án ổn định trên máy mới.
 
 - [ ] Hoàn thành toàn bộ checklist bảo toàn mã nguồn.
-- [ ] Hoàn thành chuẩn hóa môi trường frontend/backend.
+- [ ] Hoàn thành chuẩn hóa môi trường `fe`/`be`/`ai`.
 - [ ] Sửa cấu hình `.env` và Docker Compose.
 - [ ] Xác nhận migration và database schema.
 - [ ] Hoàn thiện xử lý lỗi upload và cleanup file khi database lỗi.
 - [ ] Bổ sung test nền tảng.
 - [ ] Cập nhật hướng dẫn chạy dự án.
 
-**Definition of Done:** clone/cài đặt/chạy được frontend và backend; upload file và
+**Definition of Done:** clone/cài đặt/chạy được `fe` và `be`; upload file và
 theo dõi trạng thái thành công.
 
 ## Tuần 2 - File Profiler và MinerU Normalizer
@@ -283,6 +283,7 @@ Thứ tự thực hiện gần nhất:
   - Chốt vai trò Chandra cho nhánh chữ viết tay.
   - Đổi tên sản phẩm và repository thành Scanofy.
   - Khởi tạo Git monorepo, bảo toàn lịch sử frontend và tạo baseline commit.
+  - Chuẩn hóa ba thư mục chính của monorepo thành `fe`, `be`, `ai`.
 - Đang làm:
   - Chuẩn hóa môi trường để tiếp tục phát triển.
 - Blocker:

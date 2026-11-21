@@ -882,7 +882,7 @@ GET /evaluation/summary
 
 ```text
 scanofy/
- ├── backend/
+ ├── be/
  │   ├── app/
  │   │   ├── main.py
  │   │   ├── api/
@@ -900,21 +900,10 @@ scanofy/
  │   │   ├── models/
  │   │   ├── schemas/
  │   │   ├── services/
- │   │   │   ├── file_profiler.py
- │   │   │   ├── router.py
- │   │   │   ├── normalizer.py
- │   │   │   ├── post_correction.py
- │   │   │   ├── layout_refinement.py
+ │   │   │   ├── document_processing.py
  │   │   │   ├── hierarchy_builder.py
  │   │   │   ├── chunking.py
- │   │   │   ├── embeddings.py
- │   │   │   ├── rag.py
- │   │   │   ├── education_features.py
- │   │   │   └── ocr_engines/
- │   │   │       ├── base.py
- │   │   │       ├── mineru_adapter.py
- │   │   │       ├── chandra_adapter.py
- │   │   │       └── vintern_adapter.py
+ │   │   │   └── education_features.py
  │   │   ├── workers/
  │   │   │   ├── celery_app.py
  │   │   │   └── tasks.py
@@ -925,7 +914,7 @@ scanofy/
  │   ├── Dockerfile
  │   └── docker-compose.yml
  │
- ├── frontend/
+ ├── fe/
  │   ├── app/
  │   │   ├── page.tsx
  │   │   ├── documents/
@@ -940,6 +929,19 @@ scanofy/
  │   ├── types/
  │   ├── package.json
  │   └── next.config.ts
+ │
+ ├── ai/
+ │   ├── adapters/
+ │   │   ├── mineru.py
+ │   │   ├── paddleocr.py
+ │   │   ├── chandra.py
+ │   │   └── vintern.py
+ │   ├── profiling/
+ │   ├── normalization/
+ │   ├── post_correction/
+ │   ├── evaluation/
+ │   ├── tests/
+ │   └── README.md
  │
  ├── sample_documents/
  │   ├── digital_pdf/
@@ -1183,7 +1185,7 @@ Tasks:
 - Measure block count and confidence
 - Measure correction count
 - Add README screenshots
-- Deploy frontend/backend
+- Deploy `fe`/`be` và AI inference service khi cần
 - Polish GitHub documentation
 - Prepare CV bullets
 

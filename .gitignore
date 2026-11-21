@@ -24,7 +24,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Runtime files and OCR artifacts
-backend/storage/
+be/storage/
 tmp/
 
 # Git migration backups
