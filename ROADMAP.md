@@ -59,7 +59,7 @@ Tài liệu đầu vào
 
 ### Chưa hoàn thiện
 
-- [ ] Git chưa quản lý toàn bộ monorepo; backend hiện chưa nằm trong repository.
+- [x] Git monorepo Scanofy đã quản lý frontend, backend và tài liệu ở thư mục gốc.
 - [ ] Môi trường Python và `requirements.txt` chưa đồng bộ phiên bản.
 - [ ] MinerU chưa khả dụng ổn định trên `PATH`.
 - [ ] Docker Compose và vị trí `.env` chưa thống nhất.
@@ -75,14 +75,14 @@ Tài liệu đầu vào
 
 ### 4.1. Bảo toàn mã nguồn
 
-- [ ] Kiểm tra toàn bộ thay đổi hiện tại của frontend.
-- [ ] Khởi tạo Git repository **Scanofy** tại workspace hiện tại để quản lý monorepo.
-- [ ] Không làm mất lịch sử Git hiện có của frontend khi chuyển thành monorepo.
-- [ ] Tạo `.gitignore` chung cho `.env`, `.venv`, `node_modules`, `.next`,
+- [x] Kiểm tra toàn bộ thay đổi hiện tại của frontend.
+- [x] Khởi tạo Git repository **Scanofy** tại workspace hiện tại để quản lý monorepo.
+- [x] Bảo toàn lịch sử frontend trong nhánh `frontend-original` và Git bundle cục bộ.
+- [x] Tạo `.gitignore` chung cho `.env`, `.venv`, `node_modules`, `.next`,
   database cục bộ, uploads, OCR outputs và cache.
-- [ ] Kiểm tra không có API key, mật khẩu database hoặc tài liệu riêng tư trong
+- [x] Kiểm tra không có API key, mật khẩu database hoặc tài liệu riêng tư trong
   commit.
-- [ ] Tạo baseline commit trước khi refactor.
+- [x] Tạo baseline commit `b3f4083` trước khi refactor.
 
 ### 4.2. Chuẩn hóa môi trường
 
@@ -256,7 +256,7 @@ quả theo đề cương.
 Không bắt đầu viewer hoặc AI feature trước khi dữ liệu bbox được chuẩn hóa đúng.
 Thứ tự thực hiện gần nhất:
 
-1. [ ] Thiết lập Git monorepo và baseline commit an toàn.
+1. [x] Thiết lập Git monorepo và baseline commit an toàn.
 2. [ ] Chuẩn hóa `.env`, Python virtualenv và MinerU CLI.
 3. [ ] Chốt Page/Block/Span schema.
 4. [ ] Viết fixture từ một output MinerU hiện có.
@@ -281,11 +281,12 @@ Thứ tự thực hiện gần nhất:
   - Khảo sát lại cấu trúc và trạng thái dự án.
   - Đọc và đối chiếu đề cương chính thức với roadmap cũ.
   - Chốt vai trò Chandra cho nhánh chữ viết tay.
+  - Đổi tên sản phẩm và repository thành Scanofy.
+  - Khởi tạo Git monorepo, bảo toàn lịch sử frontend và tạo baseline commit.
 - Đang làm:
-  - Chuẩn bị baseline và môi trường để tiếp tục phát triển.
+  - Chuẩn hóa môi trường để tiếp tục phát triển.
 - Blocker:
   - MinerU chưa có trên `PATH` hiện tại.
-  - Git chưa quản lý toàn bộ workspace.
   - Normalizer chưa giữ page/block/span/bbox thực tế.
 - Tiếp theo:
-  - Bắt đầu từ mục 1 trong phần "Việc triển khai ngay tiếp theo".
+  - Bắt đầu từ mục 2 trong phần "Việc triển khai ngay tiếp theo".
