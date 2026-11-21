@@ -6,6 +6,39 @@ Scanofy is an AI-powered document processing system that converts Vietnamese edu
 
 The project is not just an OCR wrapper. Its main goal is to build a complete **Document Intelligence pipeline**: upload a document, route it to the most suitable OCR/parser engine, normalize multi-engine outputs into a unified schema, reconstruct a hierarchical educational document tree, and generate learning features such as summaries, Q&A, flashcards, and quizzes.
 
+## Quick start
+
+Requirements: Python 3.11 and Node.js 20.9 or newer.
+
+Backend, from the repository root:
+
+```powershell
+cd be
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements-dev.txt
+Copy-Item .env.example .env
+python -m alembic upgrade head
+python -m uvicorn app.main:app --reload
+```
+
+Frontend, in another terminal from the repository root:
+
+```powershell
+cd fe
+npm install
+Copy-Item .env.local.example .env.local
+npm run dev
+```
+
+The frontend is available at `http://localhost:3000`; the backend API and
+OpenAPI documentation are at `http://127.0.0.1:8000` and `/docs`. To run the
+current backend tests plus frontend lint/build checks:
+
+```powershell
+.\scripts\check.ps1
+```
+
 ---
 
 ## 1. Project Vision

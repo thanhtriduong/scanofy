@@ -3,6 +3,8 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+BE_ROOT = Path(__file__).resolve().parents[2]
+
 
 class Settings(BaseSettings):
     app_name: str = "Scanofy"
@@ -26,18 +28,22 @@ class Settings(BaseSettings):
     vintern_enabled: bool = False
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=BE_ROOT / ".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
 
+    @staticmethod
+    def _resolve_workspace_path(path: Path) -> Path:
+        return path.resolve() if path.is_absolute() else (BE_ROOT / path).resolve()
+
     @property
     def upload_root(self) -> Path:
-        return self.upload_dir.resolve()
+        return self._resolve_workspace_path(self.upload_dir)
 
     @property
     def mineru_output_root(self) -> Path:
-        return self.mineru_output_dir.resolve()
+        return self._resolve_workspace_path(self.mineru_output_dir)
 
 
 @lru_cache

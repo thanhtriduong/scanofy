@@ -60,14 +60,14 @@ Tài liệu đầu vào
 ### Chưa hoàn thiện
 
 - [x] Git monorepo Scanofy đã quản lý `fe`, `be`, `ai` và tài liệu ở thư mục gốc.
-- [ ] Môi trường Python và `requirements.txt` chưa đồng bộ phiên bản.
+- [x] Python 3.11 và các direct dependency đã được chốt phiên bản.
 - [ ] MinerU chưa khả dụng ổn định trên `PATH`.
-- [ ] Docker Compose và vị trí `.env` chưa thống nhất.
+- [x] Docker Compose, backend và README cùng dùng `be/.env`.
 - [ ] File Profiler vẫn dùng dữ liệu giả định.
 - [ ] MinerU normalizer hiện gom toàn tài liệu thành một page và một block.
 - [ ] Chandra adapter mới là placeholder.
 - [ ] Chưa có PaddleOCR adapter và Vintern adapter.
-- [ ] Chưa có automated tests thực tế.
+- [x] Đã có backend unit/API tests và script kiểm tra toàn dự án.
 - [ ] Chưa có document viewer, block overlay và hierarchy tree.
 - [ ] Chưa có benchmark dataset và evaluation harness.
 
@@ -86,15 +86,15 @@ Tài liệu đầu vào
 
 ### 4.2. Chuẩn hóa môi trường
 
-- [ ] Chọn phiên bản Python chính thức cho backend trong `be`.
-- [ ] Tạo lại `be/.venv` từ `requirements.txt`.
-- [ ] Đồng bộ phiên bản FastAPI trong requirements và virtualenv.
-- [ ] Chốt một vị trí `.env` duy nhất và cập nhật README/Docker Compose.
-- [ ] Kiểm tra kết nối PostgreSQL/Neon.
-- [ ] Chạy `alembic upgrade head` thành công.
+- [x] Chọn Python 3.11 làm phiên bản chính thức cho backend trong `be`.
+- [x] Tạo lại `be/.venv` từ `requirements-dev.txt`.
+- [x] Đồng bộ phiên bản FastAPI trong requirements và virtualenv.
+- [x] Chốt `be/.env` và cập nhật README/Docker Compose.
+- [x] Kiểm tra kết nối PostgreSQL/Neon.
+- [x] Chạy `alembic upgrade head` thành công (`202606270001`, head).
 - [ ] Cài MinerU trong môi trường riêng và chạy được `mineru --help`.
-- [ ] Chạy frontend trong `fe`: lint và production build.
-- [ ] Chạy backend trong `be`: health check và OpenAPI.
+- [x] Chạy frontend trong `fe`: lint và production build.
+- [x] Chạy backend trong `be`: health check và OpenAPI qua ASGI smoke test.
 
 ### 4.3. Chốt data contract
 
@@ -108,11 +108,11 @@ Tài liệu đầu vào
 
 ### 4.4. Thiết lập kiểm thử
 
-- [ ] Backend unit test cho File Profiler, Router và Normalizer.
-- [ ] API smoke test cho upload, status, pages và blocks.
+- [x] Backend unit test cho File Profiler, Router và Normalizer hiện tại.
+- [x] API smoke test cho upload, status, pages, blocks và cleanup khi lỗi.
 - [ ] Fixture MinerU nhỏ để test mà không chạy model thật.
 - [ ] Frontend test tối thiểu cho API client và trạng thái upload.
-- [ ] Một lệnh hoặc script chạy toàn bộ lint/test.
+- [x] Có `scripts/check.ps1` chạy backend tests, frontend lint và build.
 
 ## 5. Timeline 8 tuần
 
@@ -120,13 +120,13 @@ Tài liệu đầu vào
 
 **Mục tiêu:** dựng lại và chạy dự án ổn định trên máy mới.
 
-- [ ] Hoàn thành toàn bộ checklist bảo toàn mã nguồn.
+- [x] Hoàn thành toàn bộ checklist bảo toàn mã nguồn.
 - [ ] Hoàn thành chuẩn hóa môi trường `fe`/`be`/`ai`.
-- [ ] Sửa cấu hình `.env` và Docker Compose.
-- [ ] Xác nhận migration và database schema.
-- [ ] Hoàn thiện xử lý lỗi upload và cleanup file khi database lỗi.
-- [ ] Bổ sung test nền tảng.
-- [ ] Cập nhật hướng dẫn chạy dự án.
+- [x] Sửa cấu hình `.env` và Docker Compose.
+- [x] Xác nhận migration và database schema trên Neon.
+- [x] Hoàn thiện xử lý lỗi upload và cleanup file khi database lỗi.
+- [x] Bổ sung test nền tảng.
+- [x] Cập nhật hướng dẫn chạy dự án.
 
 **Definition of Done:** clone/cài đặt/chạy được `fe` và `be`; upload file và
 theo dõi trạng thái thành công.
@@ -257,7 +257,7 @@ Không bắt đầu viewer hoặc AI feature trước khi dữ liệu bbox đư�
 Thứ tự thực hiện gần nhất:
 
 1. [x] Thiết lập Git monorepo và baseline commit an toàn.
-2. [ ] Chuẩn hóa `.env`, Python virtualenv và MinerU CLI.
+2. [ ] Chuẩn hóa `.env`, Python virtualenv và MinerU CLI (chỉ còn MinerU CLI).
 3. [ ] Chốt Page/Block/Span schema.
 4. [ ] Viết fixture từ một output MinerU hiện có.
 5. [ ] Viết MinerU normalizer thật.
@@ -284,10 +284,15 @@ Thứ tự thực hiện gần nhất:
   - Đổi tên sản phẩm và repository thành Scanofy.
   - Khởi tạo Git monorepo, bảo toàn lịch sử frontend và tạo baseline commit.
   - Chuẩn hóa ba thư mục chính của monorepo thành `fe`, `be`, `ai`.
+  - Chốt Python 3.11, dependency backend và Node.js tối thiểu.
+  - Thống nhất cấu hình backend tại `be/.env`; xác nhận migration Neon ở head.
+  - Thêm backend tests, upload cleanup và script kiểm tra toàn dự án.
+  - Chạy thành công backend tests, frontend lint và production build.
 - Đang làm:
-  - Chuẩn hóa môi trường để tiếp tục phát triển.
+  - Chốt data contract Page/Block/Span để bắt đầu Batch 2.
 - Blocker:
   - MinerU chưa có trên `PATH` hiện tại.
   - Normalizer chưa giữ page/block/span/bbox thực tế.
 - Tiếp theo:
-  - Bắt đầu từ mục 2 trong phần "Việc triển khai ngay tiếp theo".
+  - Cài MinerU trong môi trường riêng.
+  - Bắt đầu mục 3 trong phần "Việc triển khai ngay tiếp theo".

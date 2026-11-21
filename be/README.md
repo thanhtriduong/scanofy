@@ -2,13 +2,20 @@
 
 Week 1 backend scaffold for the Vietnamese Educational Document Intelligence System.
 
+## Runtime
+
+- Python 3.11
+- Environment file: `be/.env`
+- Local tests use an isolated in-memory SQLite database and never use Neon.
+
 ## Run Locally
 
 ```bash
 cd be
 python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements-dev.txt
+Copy-Item .env.example .env
 alembic upgrade head
 uvicorn app.main:app --reload
 ```
@@ -17,6 +24,12 @@ Use `DATABASE_URL` for Neon Postgres. For quick local smoke tests, set:
 
 ```env
 DATABASE_URL=sqlite:///./scanofy_dev.db
+```
+
+Run the backend checks:
+
+```powershell
+python -m pytest
 ```
 
 ## Week 1 Endpoints

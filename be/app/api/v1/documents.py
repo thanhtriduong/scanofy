@@ -46,45 +46,57 @@ async def upload_document(
 
     upload_id = str(uuid.uuid4())
     document_dir = settings.upload_root / upload_id
-    document_dir.mkdir(parents=True, exist_ok=True)
     stored_name = f"original.{file_type}"
     stored_path = document_dir / stored_name
 
-    bytes_written = 0
-    max_bytes = settings.max_upload_size_mb * 1024 * 1024
-    with stored_path.open("wb") as buffer:
-        while chunk := await file.read(1024 * 1024):
-            bytes_written += len(chunk)
-            if bytes_written > max_bytes:
-                buffer.close()
-                stored_path.unlink(missing_ok=True)
-                raise HTTPException(
-                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                    detail=f"Upload exceeds {settings.max_upload_size_mb} MB.",
-                )
-            buffer.write(chunk)
+    try:
+        document_dir.mkdir(parents=True, exist_ok=False)
+        bytes_written = 0
+        max_bytes = settings.max_upload_size_mb * 1024 * 1024
+        with stored_path.open("wb") as buffer:
+            while chunk := await file.read(1024 * 1024):
+                bytes_written += len(chunk)
+                if bytes_written > max_bytes:
+                    raise HTTPException(
+                        status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                        detail=f"Upload exceeds {settings.max_upload_size_mb} MB.",
+                    )
+                buffer.write(chunk)
 
-    document = Document(
-        id=upload_id,
-        user_id=user_id,
-        filename=original_name,
-        file_type=file_type,
-        storage_url=str(stored_path),
-        status="uploaded",
-    )
-    db.add(document)
-    db.flush()
+        document = Document(
+            id=upload_id,
+            user_id=user_id,
+            filename=original_name,
+            file_type=file_type,
+            storage_url=str(stored_path),
+            status="uploaded",
+        )
+        db.add(document)
+        db.flush()
 
-    job = DocumentJob(
-        document_id=document.id,
-        job_type="process_document",
-        status="queued",
-        current_step="queued",
-    )
-    db.add(job)
-    db.commit()
-    db.refresh(document)
-    db.refresh(job)
+        job = DocumentJob(
+            document_id=document.id,
+            job_type="process_document",
+            status="queued",
+            current_step="queued",
+        )
+        db.add(job)
+        db.commit()
+        db.refresh(document)
+        db.refresh(job)
+    except HTTPException:
+        db.rollback()
+        shutil.rmtree(document_dir, ignore_errors=True)
+        raise
+    except Exception as exc:
+        db.rollback()
+        shutil.rmtree(document_dir, ignore_errors=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not persist the uploaded document.",
+        ) from exc
+    finally:
+        await file.close()
 
     background_tasks.add_task(run_placeholder_processing, document.id, job.id, str(stored_path))
     return DocumentUploadResponse(document=document, job=job)
