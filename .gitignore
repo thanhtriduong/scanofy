@@ -1,0 +1,39 @@
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
+!*.env.example
+
+# Python
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+*.py[cod]
+*.db
+
+# Node / Next.js
+**/node_modules/
+**/.next/
+**/out/
+**/build/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime files and OCR artifacts
+backend/storage/
+tmp/
+
+# Git migration backups
+.git-migration/
+*.bundle
+
+# Editors and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
