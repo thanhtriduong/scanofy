@@ -50,3 +50,29 @@ export type DocumentStatusResponse = {
   router_decision: RouterDecision | null;
   latest_job: DocumentJob | null;
 };
+
+export type DocumentPreviewPage = {
+  page_number: number;
+  width: number | null;
+  height: number | null;
+  raw_text: string | null;
+};
+
+export type DocumentPreviewBlock = {
+  id: string;
+  page_number: number;
+  block_type: string;
+  text: string | null;
+  bbox: number[] | null;
+  reading_order: number | null;
+  confidence: number | null;
+  source_engine: string | null;
+  coordinate_system: string | null;
+};
+
+export type DocumentPreviewResponse = {
+  document: DocumentRecord;
+  pages: DocumentPreviewPage[];
+  blocks: DocumentPreviewBlock[];
+  source_engine: string | null;
+};

@@ -260,9 +260,9 @@ Thứ tự thực hiện gần nhất:
 2. [x] Chuẩn hóa `.env`, Python virtualenv và MinerU CLI.
 3. [ ] Chốt Page/Block/Span schema.
 4. [ ] Viết fixture từ một output MinerU hiện có.
-5. [ ] Viết MinerU normalizer thật.
-6. [ ] Kiểm tra API page/block/span.
-7. [ ] Làm viewer overlay bản tối thiểu trên một trang.
+5. [x] Viết MinerU normalizer thật cho Page/Block và bbox chuẩn hóa.
+6. [ ] Kiểm tra API page/block/span (Page/Block đã có; Span đang chờ schema).
+7. [x] Làm viewer preview và layout overlay bản tối thiểu.
 
 ## 7. Quy tắc cập nhật checklist
 
@@ -292,9 +292,13 @@ Thứ tự thực hiện gần nhất:
   - Chốt `SCANOFY_DESIGN.md` theo hướng Calm Intelligence, lấy cảm hứng có chọn lọc từ Heptabase.
   - Xây design tokens, app shell và refactor màn Library thành các component dùng chung.
   - Kiểm tra trực quan Library ở desktop 1440×900 và mobile 390×844.
+  - Chuẩn hóa output MinerU 4 thành Page/Block, giữ bbox `normalized_0_1` và nội dung span.
+  - Thêm API phục vụ file gốc và preview; thêm proxy cùng origin ở frontend.
+  - Xây Document Reader với PDF gốc, bản đồ layout, chọn block và chuyển trang.
+  - Kiểm tra Reader với PDF thật gồm 12 trang và 128 block ở desktop/mobile.
 - Đang làm:
-  - Chốt data contract Page/Block/Span để bắt đầu Batch 2.
+  - Chốt data contract Span và phép biến đổi bbox theo rotation/CropBox.
 - Blocker:
-  - Normalizer chưa giữ page/block/span/bbox thực tế.
+  - Chưa có text-layer/Span chuẩn để đồng bộ highlight trực tiếp trên PDF canvas.
 - Tiếp theo:
-  - Bắt đầu mục 3 trong phần "Việc triển khai ngay tiếp theo".
+  - Bổ sung Span schema và nâng Reader từ layout map sang overlay đồng bộ trên PDF.

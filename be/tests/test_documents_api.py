@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from app.core.config import get_settings
+from app.models.ocr_output import OCROutput
 
 
 @pytest.mark.anyio
@@ -79,3 +80,78 @@ async def test_unknown_document_returns_not_found(client) -> None:
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Document not found."
+
+
+@pytest.mark.anyio
+async def test_document_file_is_served_inline(client) -> None:
+    response = await client.post(
+        "/documents/upload",
+        files={"file": ("lesson.pdf", b"%PDF-1.4 test", "application/pdf")},
+    )
+    document_id = response.json()["document"]["id"]
+
+    file_response = await client.get(f"/documents/{document_id}/file")
+
+    assert file_response.status_code == 200
+    assert file_response.headers["content-type"] == "application/pdf"
+    assert file_response.headers["content-disposition"].startswith("inline;")
+    assert file_response.content == b"%PDF-1.4 test"
+
+
+@pytest.mark.anyio
+async def test_document_preview_is_empty_before_parser_output(client) -> None:
+    response = await client.post(
+        "/documents/upload",
+        files={"file": ("lesson.pdf", b"%PDF-1.4 test", "application/pdf")},
+    )
+    document_id = response.json()["document"]["id"]
+
+    preview_response = await client.get(f"/documents/{document_id}/preview")
+
+    assert preview_response.status_code == 200
+    assert preview_response.json()["document"]["id"] == document_id
+    assert preview_response.json()["pages"] == []
+    assert preview_response.json()["blocks"] == []
+
+
+@pytest.mark.anyio
+async def test_document_preview_normalizes_latest_mineru_output(
+    client, db_session
+) -> None:
+    response = await client.post(
+        "/documents/upload",
+        files={"file": ("lesson.pdf", b"%PDF-1.4 test", "application/pdf")},
+    )
+    document_id = response.json()["document"]["id"]
+    db_session.add(
+        OCROutput(
+            document_id=document_id,
+            engine="mineru",
+            raw_output={
+                "pages": [
+                    {
+                        "page_idx": 0,
+                        "blocks": [
+                            {
+                                "type": "text",
+                                "index": 0,
+                                "bbox": [0.1, 0.2, 0.8, 0.4],
+                                "content": [{"type": "text", "content": "Bài học"}],
+                            }
+                        ],
+                    }
+                ]
+            },
+            markdown_output="Bài học",
+        )
+    )
+    db_session.commit()
+
+    preview_response = await client.get(f"/documents/{document_id}/preview")
+    preview = preview_response.json()
+
+    assert preview_response.status_code == 200
+    assert preview["source_engine"] == "mineru"
+    assert preview["pages"][0]["page_number"] == 1
+    assert preview["blocks"][0]["text"] == "Bài học"
+    assert preview["blocks"][0]["coordinate_system"] == "normalized_0_1"

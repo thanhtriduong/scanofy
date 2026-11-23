@@ -1,12 +1,11 @@
 import type {
   DocumentRecord,
+  DocumentPreviewResponse,
   DocumentStatusResponse,
   UploadResponse,
 } from "@/types/documents";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ??
-  "http://127.0.0.1:8000";
+const API_BASE_URL = "/api/backend";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -52,4 +51,16 @@ export async function listDocuments(): Promise<DocumentRecord[]> {
   return request<DocumentRecord[]>("/documents", {
     cache: "no-store",
   });
+}
+
+export async function getDocumentPreview(
+  documentId: string,
+): Promise<DocumentPreviewResponse> {
+  return request<DocumentPreviewResponse>(`/documents/${documentId}/preview`, {
+    cache: "no-store",
+  });
+}
+
+export function getDocumentFileUrl(documentId: string): string {
+  return `${API_BASE_URL}/documents/${documentId}/file`;
 }

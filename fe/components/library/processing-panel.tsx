@@ -1,4 +1,5 @@
-import { AlertCircle, Database, Route, Workflow } from "lucide-react";
+import Link from "next/link";
+import { AlertCircle, Database, Eye, Route, Workflow } from "lucide-react";
 
 import { StatusBadge } from "@/components/ui/status-badge";
 import type {
@@ -14,6 +15,7 @@ type ProcessingPanelProps = {
 export function ProcessingPanel({ document, status }: ProcessingPanelProps) {
   const currentStatus = status?.status ?? document?.status ?? "idle";
   const latestJob = status?.latest_job;
+  const canPreview = ["parsed", "completed"].includes(currentStatus);
 
   return (
     <section className="rounded-lg border border-border bg-surface-raised p-5">
@@ -51,6 +53,18 @@ export function ProcessingPanel({ document, status }: ProcessingPanelProps) {
               value={latestJob?.current_step?.replaceAll("_", " ") ?? "Chưa bắt đầu"}
             />
           </div>
+
+          {canPreview && (
+            <div className="mt-4 flex justify-end">
+              <Link
+                href={`/documents/${document.id}`}
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover"
+              >
+                <Eye className="h-4 w-4" aria-hidden="true" />
+                Mở bản xem trước
+              </Link>
+            </div>
+          )}
 
           {latestJob?.error_message && (
             <div

@@ -1,8 +1,10 @@
 import shutil
 import uuid
+import mimetypes
 from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
@@ -16,12 +18,16 @@ from app.models.block import Block
 from app.schemas.document import (
     BlockRead,
     DocumentRead,
+    DocumentPreviewBlock,
+    DocumentPreviewPage,
+    DocumentPreviewResponse,
     DocumentStatusResponse,
     DocumentUploadResponse,
     OCROutputRead,
     PageRead,
 )
 from app.services.document_processing import run_placeholder_processing
+from app.services.normalizer import Normalizer
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -113,6 +119,110 @@ def get_document(document_id: str, db: Session = Depends(get_db)) -> Document:
     if document is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found.")
     return document
+
+
+@router.get("/{document_id}/file", response_class=FileResponse)
+def get_document_file(document_id: str, db: Session = Depends(get_db)) -> FileResponse:
+    document = db.get(Document, document_id)
+    if document is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found.")
+
+    file_path = Path(document.storage_url)
+    if not file_path.is_file():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document file not found.")
+
+    media_type = mimetypes.guess_type(document.filename)[0] or "application/octet-stream"
+    return FileResponse(
+        file_path,
+        media_type=media_type,
+        filename=document.filename,
+        content_disposition_type="inline",
+    )
+
+
+@router.get("/{document_id}/preview", response_model=DocumentPreviewResponse)
+def get_document_preview(
+    document_id: str, db: Session = Depends(get_db)
+) -> DocumentPreviewResponse:
+    document = db.get(Document, document_id)
+    if document is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found.")
+
+    latest_output = db.scalars(
+        select(OCROutput)
+        .where(OCROutput.document_id == document_id)
+        .order_by(desc(OCROutput.created_at))
+        .limit(1)
+    ).first()
+
+    if latest_output is not None:
+        normalized = Normalizer().normalize(
+            {
+                "engine": latest_output.engine,
+                "raw_output": latest_output.raw_output or {},
+                "markdown_output": latest_output.markdown_output,
+                "average_confidence": latest_output.average_confidence,
+            }
+        )
+        pages = [DocumentPreviewPage(**page) for page in normalized.get("pages", [])]
+        blocks = [
+            DocumentPreviewBlock(
+                id=f"page-{block['page_number']}-block-{position}",
+                page_number=block["page_number"],
+                block_type=block.get("block_type", "unknown"),
+                text=block.get("text"),
+                bbox=block.get("bbox"),
+                reading_order=block.get("reading_order"),
+                confidence=block.get("confidence"),
+                source_engine=block.get("source_engine"),
+                coordinate_system=(block.get("raw_json") or {}).get("coordinate_system"),
+            )
+            for position, block in enumerate(normalized.get("blocks", []), 1)
+        ]
+        return DocumentPreviewResponse(
+            document=document,
+            pages=pages,
+            blocks=blocks,
+            source_engine=normalized.get("source"),
+        )
+
+    persisted_pages = list(
+        db.scalars(select(Page).where(Page.document_id == document_id).order_by(Page.page_number)).all()
+    )
+    persisted_blocks = list(
+        db.scalars(
+            select(Block)
+            .where(Block.document_id == document_id)
+            .order_by(Block.page_number, Block.reading_order)
+        ).all()
+    )
+    return DocumentPreviewResponse(
+        document=document,
+        pages=[
+            DocumentPreviewPage(
+                page_number=page.page_number,
+                width=page.width,
+                height=page.height,
+                raw_text=page.raw_text,
+            )
+            for page in persisted_pages
+        ],
+        blocks=[
+            DocumentPreviewBlock(
+                id=block.id,
+                page_number=block.page_number,
+                block_type=block.block_type,
+                text=block.text,
+                bbox=block.bbox,
+                reading_order=block.reading_order,
+                confidence=block.confidence,
+                source_engine=block.source_engine,
+                coordinate_system=(block.raw_json or {}).get("coordinate_system"),
+            )
+            for block in persisted_blocks
+        ],
+        source_engine=persisted_blocks[0].source_engine if persisted_blocks else None,
+    )
 
 
 @router.get("/{document_id}/status", response_model=DocumentStatusResponse)

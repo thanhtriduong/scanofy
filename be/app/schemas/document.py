@@ -88,3 +88,29 @@ class BlockRead(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class DocumentPreviewPage(BaseModel):
+    page_number: int
+    width: float | None
+    height: float | None
+    raw_text: str | None
+
+
+class DocumentPreviewBlock(BaseModel):
+    id: str
+    page_number: int
+    block_type: str
+    text: str | None
+    bbox: list | None
+    reading_order: int | None
+    confidence: float | None
+    source_engine: str | None
+    coordinate_system: str | None
+
+
+class DocumentPreviewResponse(BaseModel):
+    document: DocumentRead
+    pages: list[DocumentPreviewPage]
+    blocks: list[DocumentPreviewBlock]
+    source_engine: str | None
