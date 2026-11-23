@@ -289,6 +289,9 @@ Thứ tự thực hiện gần nhất:
   - Thêm backend tests, upload cleanup và script kiểm tra toàn dự án.
   - Chạy thành công backend tests, frontend lint và production build.
   - Cập nhật adapter cho MinerU 4.2.3 và xác minh PDF thật đi đến `parsed`.
+  - Chốt `SCANOFY_DESIGN.md` theo hướng Calm Intelligence, lấy cảm hứng có chọn lọc từ Heptabase.
+  - Xây design tokens, app shell và refactor màn Library thành các component dùng chung.
+  - Kiểm tra trực quan Library ở desktop 1440×900 và mobile 390×844.
 - Đang làm:
   - Chốt data contract Page/Block/Span để bắt đầu Batch 2.
 - Blocker:
