@@ -296,9 +296,13 @@ Thứ tự thực hiện gần nhất:
   - Thêm API phục vụ file gốc và preview; thêm proxy cùng origin ở frontend.
   - Xây Document Reader với PDF gốc, bản đồ layout, chọn block và chuyển trang.
   - Kiểm tra Reader với PDF thật gồm 12 trang và 128 block ở desktop/mobile.
+  - Nâng Reader lên PDF.js canvas với overlay block trực tiếp và zoom/fit-width.
+  - Thay panel block map bằng mục lục heading và chi tiết nguồn đang chọn.
+  - Đồng bộ mục lục, trang PDF và block selection; giữ layout diagnostics trong disclosure.
 - Đang làm:
   - Chốt data contract Span và phép biến đổi bbox theo rotation/CropBox.
 - Blocker:
   - Chưa có text-layer/Span chuẩn để đồng bộ highlight trực tiếp trên PDF canvas.
+  - `npm audit` phát hiện Next.js 16.2.9 có advisory nghiêm trọng; cần nâng framework ở batch bảo trì riêng.
 - Tiếp theo:
-  - Bổ sung Span schema và nâng Reader từ layout map sang overlay đồng bộ trên PDF.
+  - Bổ sung Span schema/text layer và nâng Next.js lên bản vá an toàn sau khi chạy regression.
