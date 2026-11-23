@@ -299,6 +299,7 @@ Thứ tự thực hiện gần nhất:
   - Nâng Reader lên PDF.js canvas với overlay block trực tiếp và zoom/fit-width.
   - Thay panel block map bằng mục lục heading và chi tiết nguồn đang chọn.
   - Đồng bộ mục lục, trang PDF và block selection; giữ layout diagnostics trong disclosure.
+  - Chuyển PDF viewer sang cuộn liên tục toàn bộ trang, tự cập nhật trang đang đọc và bỏ native hover title trên block.
 - Đang làm:
   - Chốt data contract Span và phép biến đổi bbox theo rotation/CropBox.
 - Blocker:

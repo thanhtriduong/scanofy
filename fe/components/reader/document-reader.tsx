@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, ArrowLeft, FileText, LoaderCircle } from "lucide-react";
 
 import { DocumentContextPanel } from "@/components/reader/document-context-panel";
@@ -47,25 +47,20 @@ export function DocumentReader({ documentId }: DocumentReaderProps) {
     };
   }, [documentId]);
 
-  const pageBlocks = useMemo(
-    () =>
-      preview?.blocks.filter((block) => block.page_number === pageNumber) ?? [],
-    [pageNumber, preview],
-  );
   const selectedBlock =
     preview?.blocks.find((block) => block.id === selectedBlockId) ?? null;
 
-  function changePage(nextPage: number) {
+  const changePage = useCallback((nextPage: number) => {
     setPageNumber(nextPage);
     if (selectedBlock?.page_number !== nextPage) {
       setSelectedBlockId(null);
     }
-  }
+  }, [selectedBlock]);
 
-  function navigateToBlock(block: DocumentPreviewBlock) {
+  const navigateToBlock = useCallback((block: DocumentPreviewBlock) => {
     setPageNumber(block.page_number);
     setSelectedBlockId(block.id);
-  }
+  }, []);
 
   if (error) {
     return <ReaderError message={error} />;
@@ -122,7 +117,7 @@ export function DocumentReader({ documentId }: DocumentReaderProps) {
                 fileUrl={fileUrl}
                 filename={preview.document.filename}
                 pageNumber={pageNumber}
-                blocks={pageBlocks}
+                blocks={preview.blocks}
                 selectedBlockId={selectedBlockId}
                 showGeometry={showGeometry}
                 onPageChange={changePage}

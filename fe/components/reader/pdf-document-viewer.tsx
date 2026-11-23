@@ -38,13 +38,14 @@ export function PdfDocumentViewer({
   onSelectBlock,
   onToggleGeometry,
 }: PdfDocumentViewerProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
-  const renderTaskRef = useRef<RenderTask | null>(null);
+  const pageElementsRef = useRef(new Map<number, HTMLDivElement>());
+  const visibilityRef = useRef(new Map<number, number>());
+  const visiblePageRef = useRef(1);
+  const navigationTargetRef = useRef<number | null>(null);
   const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null);
   const [zoom, setZoom] = useState(1);
   const [fitToWidth, setFitToWidth] = useState(true);
-  const [isRendering, setIsRendering] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -79,88 +80,94 @@ export function PdfDocumentViewer({
     void loadPdf();
     return () => {
       disposed = true;
-      renderTaskRef.current?.cancel();
       void document?.cleanup();
       worker?.terminate();
     };
   }, [fileUrl]);
 
   useEffect(() => {
-    if (!pdf || !canvasRef.current) return;
+    if (!pdf || !fitToWidth || !viewerRef.current) return;
     const currentPdf = pdf;
+    const viewer = viewerRef.current;
     let disposed = false;
 
-    async function renderPage() {
-      setIsRendering(true);
-      renderTaskRef.current?.cancel();
-      try {
-        const page = await currentPdf.getPage(pageNumber);
-        if (disposed || !canvasRef.current) return;
-        if (fitToWidth && viewerRef.current) {
-          const baseViewport = page.getViewport({ scale: 1 });
-          const horizontalPadding = window.innerWidth < 640 ? 32 : 64;
-          const fittedZoom = Math.min(
-            1.5,
-            Math.max(0.5, (viewerRef.current.clientWidth - horizontalPadding) / baseViewport.width),
-          );
-          if (Math.abs(fittedZoom - zoom) > 0.01) {
-            setZoom(fittedZoom);
-            return;
-          }
-        }
-        const viewport = page.getViewport({ scale: zoom });
-        const outputScale = window.devicePixelRatio || 1;
-        const canvas = canvasRef.current;
-        const context = canvas.getContext("2d");
-        if (!context) throw new Error("Trình duyệt không hỗ trợ PDF canvas.");
-
-        canvas.width = Math.floor(viewport.width * outputScale);
-        canvas.height = Math.floor(viewport.height * outputScale);
-        canvas.style.width = `${Math.floor(viewport.width)}px`;
-        canvas.style.height = `${Math.floor(viewport.height)}px`;
-        const transform =
-          outputScale === 1
-            ? undefined
-            : [outputScale, 0, 0, outputScale, 0, 0];
-
-        const renderTask = page.render({
-          canvas,
-          canvasContext: context,
-          viewport,
-          transform,
-        });
-        renderTaskRef.current = renderTask;
-        await renderTask.promise;
-        if (!disposed) {
-          setIsRendering(false);
-          setError(null);
-        }
-      } catch (reason) {
-        if (disposed || (reason instanceof Error && reason.name === "RenderingCancelledException")) {
-          return;
-        }
-        setError(
-          reason instanceof Error ? reason.message : "Không thể render trang PDF.",
-        );
-        setIsRendering(false);
-      }
+    async function fitPages() {
+      const firstPage = await currentPdf.getPage(1);
+      if (disposed) return;
+      const baseViewport = firstPage.getViewport({ scale: 1 });
+      const horizontalPadding = window.innerWidth < 640 ? 32 : 64;
+      const fittedZoom = Math.min(
+        1.5,
+        Math.max(0.5, (viewer.clientWidth - horizontalPadding) / baseViewport.width),
+      );
+      setZoom((current) =>
+        Math.abs(current - fittedZoom) > 0.01 ? fittedZoom : current,
+      );
     }
 
-    void renderPage();
+    void fitPages();
+    const resizeObserver = new ResizeObserver(() => void fitPages());
+    resizeObserver.observe(viewer);
     return () => {
       disposed = true;
-      renderTaskRef.current?.cancel();
+      resizeObserver.disconnect();
     };
-  }, [fitToWidth, pageNumber, pdf, zoom]);
+  }, [fitToWidth, pdf]);
+
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!pdf || !viewer) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const candidate = Number(
+            (entry.target as HTMLElement).dataset.pageNumber,
+          );
+          visibilityRef.current.set(candidate, entry.intersectionRatio);
+        }
+
+        let mostVisiblePage = visiblePageRef.current;
+        let largestRatio = 0;
+        for (const [candidate, ratio] of visibilityRef.current) {
+          if (ratio > largestRatio) {
+            mostVisiblePage = candidate;
+            largestRatio = ratio;
+          }
+        }
+        if (largestRatio <= 0 || mostVisiblePage === visiblePageRef.current) return;
+
+        const target = navigationTargetRef.current;
+        if (target !== null && mostVisiblePage !== target) return;
+        navigationTargetRef.current = null;
+        visiblePageRef.current = mostVisiblePage;
+        onPageChange(mostVisiblePage);
+      },
+      {
+        root: viewer,
+        threshold: [0.1, 0.25, 0.5, 0.75, 0.9],
+      },
+    );
+
+    for (const element of pageElementsRef.current.values()) {
+      observer.observe(element);
+    }
+    return () => observer.disconnect();
+  }, [onPageChange, pdf]);
+
+  useEffect(() => {
+    if (!pdf || pageNumber === visiblePageRef.current) return;
+    const target = pageElementsRef.current.get(pageNumber);
+    if (!target) return;
+    navigationTargetRef.current = pageNumber;
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [pageNumber, pdf]);
 
   const pageCount = pdf?.numPages ?? 0;
-  const geometricBlocks = blocks.filter(
-    (block) =>
-      block.coordinate_system === "normalized_0_1" && block.bbox?.length === 4,
-  );
+  const pages = Array.from({ length: pageCount }, (_, index) => index + 1);
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-lg border border-border bg-background">
+    <div className="flex h-[calc(100vh-10.5rem)] min-h-[560px] flex-col overflow-hidden rounded-lg border border-border bg-background">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-3 py-2">
         <div className="flex items-center gap-2">
           <ToolbarButton
@@ -233,43 +240,150 @@ export function PdfDocumentViewer({
         </div>
       </div>
 
-      <div ref={viewerRef} className="relative flex flex-1 justify-center overflow-auto bg-muted p-4 sm:p-8">
+      <div
+        ref={viewerRef}
+        className="relative flex-1 overflow-auto bg-muted px-4 py-6 sm:px-8"
+      >
         {error ? (
-          <div className="m-auto max-w-md rounded-lg border border-danger/20 bg-background p-5 text-center">
-            <p className="text-sm font-medium text-danger">Không thể hiển thị PDF</p>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">{error}</p>
-            <a
-              href={fileUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-4 inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground"
-            >
-              Mở file gốc
-            </a>
+          <PdfError message={error} fileUrl={fileUrl} />
+        ) : !pdf ? (
+          <div className="grid h-full place-items-center">
+            <div className="text-center">
+              <LoaderCircle className="mx-auto h-5 w-5 animate-spin text-primary" aria-hidden="true" />
+              <p className="mt-2 text-xs text-muted-foreground">Đang tải tài liệu</p>
+            </div>
           </div>
         ) : (
-          <div className="relative h-fit w-fit bg-background shadow-sm" aria-label={`Trang ${pageNumber} của ${filename}`}>
-            <canvas ref={canvasRef} className="block max-w-none" />
-            {geometricBlocks.map((block) => (
-              <BlockRegion
-                key={block.id}
-                block={block}
-                selected={block.id === selectedBlockId}
-                showGeometry={showGeometry}
-                onSelect={() => onSelectBlock(block.id)}
-              />
-            ))}
-            {isRendering && (
-              <div className="absolute inset-0 grid min-h-96 min-w-72 place-items-center bg-background/85">
-                <div className="text-center">
-                  <LoaderCircle className="mx-auto h-5 w-5 animate-spin text-primary" aria-hidden="true" />
-                  <p className="mt-2 text-xs text-muted-foreground">Đang render trang</p>
-                </div>
+          <div className="mx-auto flex w-fit min-w-full flex-col items-center gap-6">
+            {pages.map((currentPage) => (
+              <div
+                key={currentPage}
+                ref={(element) => {
+                  if (element) pageElementsRef.current.set(currentPage, element);
+                  else pageElementsRef.current.delete(currentPage);
+                }}
+                data-page-number={currentPage}
+                className="scroll-mt-4"
+              >
+                <p className="mb-2 text-center text-xs font-medium text-muted-foreground">
+                  Trang {currentPage}
+                </p>
+                <PdfPage
+                  pdf={pdf}
+                  filename={filename}
+                  pageNumber={currentPage}
+                  zoom={zoom}
+                  blocks={blocks.filter((block) => block.page_number === currentPage)}
+                  selectedBlockId={selectedBlockId}
+                  showGeometry={showGeometry}
+                  onSelectBlock={onSelectBlock}
+                />
               </div>
-            )}
+            ))}
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function PdfPage({
+  pdf,
+  filename,
+  pageNumber,
+  zoom,
+  blocks,
+  selectedBlockId,
+  showGeometry,
+  onSelectBlock,
+}: {
+  pdf: PDFDocumentProxy;
+  filename: string;
+  pageNumber: number;
+  zoom: number;
+  blocks: DocumentPreviewBlock[];
+  selectedBlockId: string | null;
+  showGeometry: boolean;
+  onSelectBlock: (blockId: string) => void;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const renderTaskRef = useRef<RenderTask | null>(null);
+  const [isRendering, setIsRendering] = useState(true);
+
+  useEffect(() => {
+    let disposed = false;
+
+    async function renderPage() {
+      setIsRendering(true);
+      renderTaskRef.current?.cancel();
+      try {
+        const page = await pdf.getPage(pageNumber);
+        if (disposed || !canvasRef.current) return;
+        const viewport = page.getViewport({ scale: zoom });
+        const outputScale = window.devicePixelRatio || 1;
+        const canvas = canvasRef.current;
+        const context = canvas.getContext("2d");
+        if (!context) return;
+
+        canvas.width = Math.floor(viewport.width * outputScale);
+        canvas.height = Math.floor(viewport.height * outputScale);
+        canvas.style.width = `${Math.floor(viewport.width)}px`;
+        canvas.style.height = `${Math.floor(viewport.height)}px`;
+        const transform =
+          outputScale === 1
+            ? undefined
+            : [outputScale, 0, 0, outputScale, 0, 0];
+        const task = page.render({
+          canvas,
+          canvasContext: context,
+          viewport,
+          transform,
+        });
+        renderTaskRef.current = task;
+        await task.promise;
+        if (!disposed) setIsRendering(false);
+      } catch (reason) {
+        if (
+          !disposed &&
+          !(reason instanceof Error && reason.name === "RenderingCancelledException")
+        ) {
+          setIsRendering(false);
+        }
+      }
+    }
+
+    void renderPage();
+    return () => {
+      disposed = true;
+      renderTaskRef.current?.cancel();
+    };
+  }, [pageNumber, pdf, zoom]);
+
+  const geometricBlocks = blocks.filter(
+    (block) =>
+      block.coordinate_system === "normalized_0_1" && block.bbox?.length === 4,
+  );
+
+  return (
+    <div
+      className="relative h-fit w-fit bg-background shadow-sm"
+      aria-label={`Trang ${pageNumber} của ${filename}`}
+    >
+      <canvas ref={canvasRef} className="block max-w-none" />
+      {geometricBlocks.map((block) => (
+        <BlockRegion
+          key={block.id}
+          block={block}
+          selected={block.id === selectedBlockId}
+          showGeometry={showGeometry}
+          onSelect={() => onSelectBlock(block.id)}
+        />
+      ))}
+      {isRendering && (
+        <div className="absolute inset-0 grid min-h-96 min-w-72 place-items-center bg-background/85">
+          <LoaderCircle className="h-5 w-5 animate-spin text-primary" aria-hidden="true" />
+        </div>
+      )}
     </div>
   );
 }
@@ -290,7 +404,6 @@ function BlockRegion({
     <button
       type="button"
       onClick={onSelect}
-      title={block.text ?? block.block_type}
       aria-label={`Chọn ${formatBlockType(block.block_type)} trên trang ${block.page_number}`}
       className={`absolute transition-colors focus:z-20 ${
         selected
@@ -308,6 +421,23 @@ function BlockRegion({
     >
       <span className="sr-only">{block.text}</span>
     </button>
+  );
+}
+
+function PdfError({ message, fileUrl }: { message: string; fileUrl: string }) {
+  return (
+    <div className="m-auto max-w-md rounded-lg border border-danger/20 bg-background p-5 text-center">
+      <p className="text-sm font-medium text-danger">Không thể hiển thị PDF</p>
+      <p className="mt-2 text-xs leading-5 text-muted-foreground">{message}</p>
+      <a
+        href={fileUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-4 inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground"
+      >
+        Mở file gốc
+      </a>
+    </div>
   );
 }
 
