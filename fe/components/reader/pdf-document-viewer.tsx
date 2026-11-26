@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  ChevronLeft,
-  ChevronRight,
+  PanelLeft,
+  X,
   Eye,
   EyeOff,
   LoaderCircle,
@@ -14,6 +14,7 @@ import {
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 
 import type { DocumentPreviewBlock } from "@/types/documents";
+import { PageThumbnail } from "@/components/reader/page-thumbnail";
 
 type PdfDocumentViewerProps = {
   fileUrl: string;
@@ -47,6 +48,26 @@ export function PdfDocumentViewer({
   const [zoom, setZoom] = useState(1);
   const [fitToWidth, setFitToWidth] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showThumbnails, setShowThumbnails] = useState(false);
+  const thumbnailToggleRef = useRef<HTMLButtonElement>(null);
+
+  function closeThumbnails() {
+    setShowThumbnails(false);
+    thumbnailToggleRef.current?.focus();
+  }
+
+  function jumpToPage(number: number) {
+    const viewer = viewerRef.current;
+    const target = pageElementsRef.current.get(number);
+    if (!viewer || !target) return;
+    navigationTargetRef.current = number;
+    viewer.scrollTo({
+      top: viewer.scrollTop + target.getBoundingClientRect().top - viewer.getBoundingClientRect().top - 16,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
+    onPageChange(number);
+    if (window.innerWidth < 640) closeThumbnails();
+  }
 
   useEffect(() => {
     let disposed = false;
@@ -192,23 +213,10 @@ export function PdfDocumentViewer({
     <div className="flex h-[calc(100vh-10.5rem)] min-h-[560px] flex-col overflow-hidden rounded-lg border border-border bg-background">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-3 py-2">
         <div className="flex items-center gap-2">
-          <ToolbarButton
-            label="Trang trước"
-            disabled={!pdf || pageNumber <= 1}
-            onClick={() => onPageChange(pageNumber - 1)}
-          >
-            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-          </ToolbarButton>
-          <p className="min-w-24 text-center text-sm font-medium">
-            Trang {pageNumber} / {pageCount || "—"}
-          </p>
-          <ToolbarButton
-            label="Trang sau"
-            disabled={!pdf || pageNumber >= pageCount}
-            onClick={() => onPageChange(pageNumber + 1)}
-          >
-            <ChevronRight className="h-4 w-4" aria-hidden="true" />
-          </ToolbarButton>
+          <button ref={thumbnailToggleRef} type="button" disabled={!pdf} aria-expanded={showThumbnails} aria-controls="pdf-thumbnails" onClick={() => setShowThumbnails((current) => !current)} className={`scanofy-control inline-flex h-9 items-center gap-2 border px-3 text-sm font-medium disabled:opacity-40 ${showThumbnails ? "border-primary/30 bg-info-soft text-primary" : "border-border hover:bg-surface"}`}>
+            <PanelLeft className="h-4 w-4" aria-hidden="true" /> Các trang
+          </button>
+          <span className="text-xs tabular-nums text-muted-foreground" aria-live="polite">{pageNumber} / {pageCount || "—"}</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -262,10 +270,19 @@ export function PdfDocumentViewer({
         </div>
       </div>
 
+      <div className="relative flex min-h-0 flex-1">
+      {showThumbnails && pdf && (
+        <aside id="pdf-thumbnails" aria-label="Ảnh thu nhỏ các trang" onKeyDown={(event) => { if (event.key === "Escape") closeThumbnails(); }} className="absolute inset-y-0 left-0 z-20 flex w-44 shrink-0 flex-col border-r border-border bg-surface sm:static sm:w-40">
+          <div className="flex items-center justify-between px-3 py-2"><h2 className="text-sm font-medium">{pageCount} trang</h2><button type="button" onClick={closeThumbnails} aria-label="Đóng danh sách trang" className="scanofy-control grid h-8 w-8 place-items-center hover:bg-muted"><X className="h-4 w-4" aria-hidden="true" /></button></div>
+          <nav className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3" aria-label="Chuyển trang PDF">
+            {pages.map((number) => <PageThumbnail key={number} pdf={pdf} pageNumber={number} active={number === pageNumber} onSelect={() => jumpToPage(number)} />)}
+          </nav>
+        </aside>
+      )}
       <div
         ref={viewerRef}
         data-pdf-scroll
-        className="relative flex-1 overflow-auto bg-muted px-4 py-6 sm:px-8"
+        className="relative min-w-0 flex-1 overflow-auto bg-muted px-4 py-6 sm:px-8"
       >
         {error ? (
           <PdfError message={error} fileUrl={fileUrl} />
@@ -305,6 +322,7 @@ export function PdfDocumentViewer({
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

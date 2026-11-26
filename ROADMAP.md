@@ -278,6 +278,8 @@ Thứ tự thực hiện gần nhất:
 
 ### Tuần hiện tại
 
+- Reader thumbnail panel: thay nút trước/sau bằng nút “Các trang”, ảnh thu nhỏ PDF tải gần viewport, chọn thumbnail cuộn tới trang; panel đóng/mở và đánh dấu trang hiện tại. Browser QA xác nhận mở, chọn trang 3 và đóng; console không có lỗi.
+
 - Batch 2026-11-26: chốt luồng Library/upload/Workspace/retry/delete; 23 backend tests và frontend lint/build đạt. Sửa normalize lặp giữ Page/Block IDs, kiểm tra bbox hữu hạn 0–1, preview thêm parse_run_id và heading_level. Reader cuộn đến đúng block nguồn và chỉ bắt đầu render canvas gần viewport. Browser QA xác nhận heading trang 2 được highlight và đưa vào vùng nhìn; console không có lỗi.
 - Chưa hoàn tất: Span model/API, PDF text layer, giải phóng canvas xa viewport, benchmark rotation/CropBox và kiểm thử upload end-to-end với MinerU thật trong lần chốt này.
 
