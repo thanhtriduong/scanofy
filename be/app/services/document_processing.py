@@ -70,6 +70,12 @@ class DocumentProcessingService:
                 self.db.commit()
 
                 normalized = self.normalizer.normalize(ocr_result)
+                measured_pages = {page["page_number"]: page for page in profile.get("pages", [])}
+                for page in normalized.get("pages", []):
+                    measured = measured_pages.get(page["page_number"])
+                    if measured is not None:
+                        for field in ("width", "height", "rotation"):
+                            page[field] = measured.get(field)
                 self._persist_normalized_output(document.id, normalized, ocr_output.id)
                 document.status = "parsed"
                 job.current_step = "parsed"

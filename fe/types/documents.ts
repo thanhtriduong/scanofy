@@ -26,9 +26,12 @@ export type DocumentJob = {
 export type FileProfile = {
   file_type: string;
   size_bytes: number;
-  text_layer_ratio: number;
-  scan_score: number;
-  handwriting_score: number;
+  text_layer_ratio: number | null;
+  scan_score: number | null;
+  handwriting_score: number | null;
+  classification?: string;
+  profile_version?: string;
+  warnings?: string[];
   page_count: number | null;
 };
 

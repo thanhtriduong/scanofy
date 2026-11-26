@@ -63,7 +63,7 @@ Tài liệu đầu vào
 - [x] Python 3.11 và các direct dependency đã được chốt phiên bản.
 - [x] MinerU 4.2.3 chạy qua `mineru-kit` trong `be/.venv`.
 - [x] Docker Compose, backend và README cùng dùng `be/.env`.
-- [ ] File Profiler vẫn dùng dữ liệu giả định.
+- [x] File Profiler v1 đo PDF page/text/image evidence, ảnh và DOCX; chữ viết tay chưa biết giữ null.
 - [x] MinerU 4 normalizer giữ Page/Block và bbox 0–1 hợp lệ; Span còn chờ triển khai.
 - [ ] Chandra adapter mới là placeholder.
 - [ ] Chưa có PaddleOCR adapter và Vintern adapter.
@@ -136,7 +136,7 @@ theo dõi trạng thái thành công.
 
 **Mục tiêu:** biến artifact MinerU thành page/block/span thật trong database.
 
-- [ ] Phân tích PDF text layer, page count và scan score thật.
+- [x] Phân tích PDF text layer, page count và scan score dựa trên trang có ảnh/thiếu text; heuristic và giới hạn ghi ở `docs/FILE_PROFILER.md`.
 - [ ] Chọn rõ artifact MinerU theo tên thay vì lấy JSON đầu tiên.
 - [ ] Parse `original_middle.json`.
 - [ ] Parse `original_content_list_v2.json`.
@@ -277,6 +277,8 @@ Thứ tự thực hiện gần nhất:
 ## 8. Nhật ký tiến độ
 
 ### Tuần hiện tại
+
+- File Profiler v1: pypdf/Pillow đo trang, CropBox, rotation, text và image count; bỏ tỷ lệ giả định, giữ handwriting unknown. Router dùng bằng chứng đo, scan/ảnh chờ PaddleOCR, PDF hỗn hợp giữ MinerU. 40 backend tests đạt; hai PDF thật đo 17 và 12 trang, text ratio 1.0. Không tự cập nhật hồ sơ tài liệu cũ.
 
 - Data contract v1: `docs/DATA_CONTRACT.md`; model/API Span và migration `202611260001` đã áp dụng. Span giữ nội dung, thứ tự, tham chiếu OCR output; geometry thiếu giữ null. Fixture tổng hợp tiếng Việt và test normalize lặp, cascade, API filters, migration lên/xuống đạt. Tài liệu cũ chưa backfill; text layer, version capture và rotation transforms vẫn đang chờ.
 

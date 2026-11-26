@@ -7,6 +7,7 @@ from app.models.document import Document
 from app.models.page import Page
 from app.models.block import Block
 from app.services.document_processing import DocumentProcessingService
+from tests.pdf_fixtures import write_pdf
 
 
 @pytest.mark.parametrize("bbox", [[-1, 0, 1, 1], [0, 0, 500, 800], [0.8, 0.1, 0.2, 0.9], [0, 0, float("nan"), 1], [True, 0, 1, 1]])
@@ -36,7 +37,7 @@ def test_pipeline_publishes_parsed_output_after_normalization(db_session, tmp_pa
     from app.models.document_job import DocumentJob
     from app.models.ocr_output import OCROutput
     source = tmp_path / "lesson.pdf"
-    source.write_bytes(b"%PDF-1.4 test")
+    write_pdf(source)
     document = Document(filename="lesson.pdf", file_type="pdf", storage_url=str(source), status="uploaded")
     db_session.add(document)
     db_session.flush()
@@ -51,19 +52,23 @@ def test_pipeline_publishes_parsed_output_after_normalization(db_session, tmp_pa
     assert document.status == "parsed"
     assert job.status == "completed"
     assert db_session.scalars(select(Page)).one().page_number == 1
+    assert db_session.scalars(select(Page)).one().width == 600
+    assert db_session.scalars(select(Page)).one().height == 800
     assert db_session.scalars(select(Block)).one().text == "Bài học"
     assert db_session.scalars(select(OCROutput)).one().engine == "mineru"
 
 
 def test_profiler_records_basic_pdf_metadata(tmp_path) -> None:
     file_path = tmp_path / "lesson.pdf"
-    file_path.write_bytes(b"%PDF-1.4 test")
+    write_pdf(file_path)
 
     profile = FileProfiler().profile(file_path, "pdf")
 
     assert profile["file_type"] == "pdf"
     assert profile["size_bytes"] == file_path.stat().st_size
-    assert profile["text_layer_ratio"] == 0.7
+    assert profile["text_layer_ratio"] == 1
+    assert profile["page_count"] == 1
+    assert profile["handwriting_score"] is None
 
 
 def test_router_selects_mineru_for_digital_pdf() -> None:
