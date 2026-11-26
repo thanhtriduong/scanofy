@@ -1,0 +1,23 @@
+flowchart TD
+    A[Library: tải tài liệu] --> B[FastAPI: kiểm tra file, lưu bản gốc]
+    B --> C[(Document và job queued)]
+    C --> D[Trả upload response]
+    D --> W[Document Workspace: đọc PDF ngay]
+    C --> E[Background task: File Profiler]
+    E --> F{Router chọn engine}
+    F -->|MinerU| G[mineru-kit parse: ZIP output riêng từng lần]
+    F -->|Engine khác chưa tích hợp| H[awaiting_ocr: vẫn đọc file gốc]
+    G --> I[Giải nén an toàn; chọn đúng middle_json.json và markdown.md]
+    I --> J[Kiểm tra cấu trúc trang; lưu manifest, hash, raw và Markdown]
+    J --> K[Normalizer: Page / Block / Span; kiểm tra contract và số trang]
+    K --> L[(Giao dịch lưu snapshot chuẩn hóa)]
+    L --> M[Document parsed; job completed]
+    W --> N[Polling trạng thái]
+    N -->|parsed| O[Mục lục, thumbnail và overlay block]
+    M --> N
+    E & G & I & K & L -->|Lỗi| P[Document failed; job giữ error_message]
+    P --> Q[Workspace vẫn đọc PDF; thông báo lỗi và Thử lại]
+    Q --> R[Retry API: tạo job mới]
+    R --> E
+    J -. Raw đã lưu .-> S[Lệnh renormalize: dry-run mặc định]
+    S -->|--apply; không gọi model| K

@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "file_suffix": "pdf",
+    "producer": {"name": "mineru", "version": "4.2.3"},
+    "document": {"producer_application": "pypdf", "page_count": 1, "page_count_kind": "physical"}
+  },
+  "extensions": {
+    "mineru": {"tier": "standard", "parse_mode": "txt"},
+    "docvortex_layout": {"version": 1, "pages": [{"page_idx": 0, "width_pt": 600, "height_pt": 800}]}
+  },
+  "pages": [{"page_idx": 0, "blocks": [{
+    "type": "text", "index": 0, "bbox": [0.046, 0.111, 0.566, 0.13],
+    "content": [{"type": "text", "content": "This is a digital educational document with selectable text."}]
+  }]}],
+  "is_full_document": true,
+  "schema": "docvortex.middle",
+  "schema_version": "2.0"
+}

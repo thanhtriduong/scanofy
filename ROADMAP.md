@@ -64,7 +64,7 @@ Tài liệu đầu vào
 - [x] MinerU 4.2.3 chạy qua `mineru-kit` trong `be/.venv`.
 - [x] Docker Compose, backend và README cùng dùng `be/.env`.
 - [x] File Profiler v1 đo PDF page/text/image evidence, ảnh và DOCX; chữ viết tay chưa biết giữ null.
-- [x] MinerU 4 normalizer giữ Page/Block và bbox 0–1 hợp lệ; Span còn chờ triển khai.
+- [x] MinerU 4 normalizer giữ Page/Block/Span và bbox 0–1 hợp lệ.
 - [ ] Chandra adapter mới là placeholder.
 - [ ] Chưa có PaddleOCR adapter và Vintern adapter.
 - [x] Đã có backend unit/API tests và script kiểm tra toàn dự án.
@@ -111,7 +111,7 @@ Tài liệu đầu vào
 
 - [x] Backend unit test cho File Profiler, Router và Normalizer hiện tại.
 - [x] API smoke test cho upload, status, pages, blocks và cleanup khi lỗi.
-- [ ] Fixture MinerU nhỏ để test mà không chạy model thật.
+- [x] Fixture MinerU 4.2.3 từ PDF tổng hợp đã chạy CLI thật để test không cần model.
 - [ ] Frontend test tối thiểu cho API client và trạng thái upload.
 - [x] Có `scripts/check.ps1` chạy backend tests, frontend lint và build.
 
@@ -137,14 +137,18 @@ theo dõi trạng thái thành công.
 **Mục tiêu:** biến artifact MinerU thành page/block/span thật trong database.
 
 - [x] Phân tích PDF text layer, page count và scan score dựa trên trang có ảnh/thiếu text; heuristic và giới hạn ghi ở `docs/FILE_PROFILER.md`.
-- [ ] Chọn rõ artifact MinerU theo tên thay vì lấy JSON đầu tiên.
-- [ ] Parse `original_middle.json`.
-- [ ] Parse `original_content_list_v2.json`.
-- [ ] Chuẩn hóa page, block, span, bbox, reading order và block type.
-- [ ] Lưu Markdown, ảnh và tham chiếu artifact cần thiết.
+- [x] Chọn rõ artifact MinerU theo tên thay vì lấy JSON đầu tiên; lỗi nếu thiếu/trùng/hỏng.
+- [x] Parse `middle_json.json` của MinerU 4.2.3 (thay cho tên `original_middle.json` ở kế hoạch cũ).
+- [x] Chốt nguồn cấu trúc là middle JSON có `pages[]`; không cần `original_content_list_v2.json` của bản cũ. Legacy import chưa hỗ trợ.
+- [x] Chuẩn hóa page, block, span, bbox, reading order và block type.
+- [x] Lưu Markdown, ảnh và manifest artifact theo từng lần chạy; có API tải artifact.
 - [x] Chuẩn hóa lại Page/Block không tạo dữ liệu trùng, giữ ID theo vị trí trang/reading order; test lặp đã qua.
-- [ ] Thêm API trả page/block/span theo trang.
-- [ ] Viết test từ artifact MinerU hiện có.
+- [x] Thêm API trả page/block/span theo trang.
+- [x] Viết test từ artifact MinerU 4.2.3 thực tế của PDF tổng hợp; có lệnh renormalize dry-run/apply và smoke test CLI thật.
+
+Kiểm chứng pipeline một PDF tổng hợp đã qua; xem `docs/MINERU_PIPELINE.md`
+và `docs/diagrams/`. Chưa thay thế benchmark tài liệu dài/tiếng Việt/bảng/công thức
+ở tuần 5. Pipeline hiện dùng FastAPI background task, chưa có durable job queue.
 
 **Definition of Done:** upload PDF -> MinerU -> database có đúng số trang và các
 block có bbox; API trả dữ liệu đủ để vẽ overlay.

@@ -36,6 +36,25 @@ router = APIRouter(prefix="/documents", tags=["documents"])
 ALLOWED_FILE_TYPES = {"pdf", "docx", "jpg", "jpeg", "png", "webp"}
 
 
+@router.get("/{document_id}/outputs/{output_id}/artifacts/{artifact_path:path}")
+def get_output_artifact(document_id: str, output_id: str, artifact_path: str, db: Session = Depends(get_db)) -> FileResponse:
+    output = db.get(OCROutput, output_id)
+    if output is None or output.document_id != document_id:
+        raise HTTPException(status_code=404, detail="OCR output not found.")
+    manifest = (output.raw_output or {}).get("_scanofy", {}).get("artifacts", [])
+    if artifact_path not in {entry["path"] for entry in manifest}:
+        raise HTTPException(status_code=404, detail="Artifact not in output manifest.")
+    root = (get_settings().mineru_output_root / document_id).resolve()
+    target = (root / artifact_path).resolve()
+    if not target.is_relative_to(root) or not target.is_file():
+        raise HTTPException(status_code=404, detail="Artifact file not found.")
+    media_type = mimetypes.guess_type(target.name)[0] or "application/octet-stream"
+    inline = media_type in {"image/png", "image/jpeg", "image/webp", "application/pdf"}
+    return FileResponse(target, filename=target.name, media_type=media_type,
+                        content_disposition_type="inline" if inline else "attachment",
+                        headers={"X-Content-Type-Options": "nosniff"})
+
+
 @router.post("/upload", response_model=DocumentUploadResponse, status_code=status.HTTP_201_CREATED)
 async def upload_document(
     background_tasks: BackgroundTasks,
@@ -166,6 +185,11 @@ def get_document_preview(
                 "average_confidence": latest_output.average_confidence,
             }
         )
+        measured_pages = {page["page_number"]: page for page in (document.profile or {}).get("pages", [])}
+        for page in normalized.get("pages", []):
+            measured = measured_pages.get(page["page_number"])
+            if measured:
+                page.update({field: measured.get(field) for field in ("width", "height", "rotation")})
         pages = [DocumentPreviewPage(**page) for page in normalized.get("pages", [])]
         blocks = [
             DocumentPreviewBlock(

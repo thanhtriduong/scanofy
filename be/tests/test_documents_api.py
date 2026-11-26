@@ -8,6 +8,24 @@ from app.models.document import Document
 
 
 @pytest.mark.anyio
+async def test_artifact_access_is_manifest_and_document_scoped(client, db_session):
+    response = await client.post("/documents/upload", files={"file": ("sample.pdf", b"%PDF-test", "application/pdf")})
+    document_id = response.json()["document"]["id"]
+    artifact = get_settings().mineru_output_root / document_id / "run" / "markdown.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("# Synthetic lesson", encoding="utf-8")
+    output = OCROutput(document_id=document_id, engine="mineru", raw_output={"_scanofy": {"artifacts": [{"path": "run/markdown.md"}]}})
+    db_session.add(output)
+    db_session.commit()
+    url = f"/documents/{document_id}/outputs/{output.id}/artifacts"
+    allowed = await client.get(f"{url}/run/markdown.md")
+    assert allowed.status_code == 200
+    assert allowed.headers["content-disposition"].startswith("attachment;")
+    assert (await client.get(f"{url}/run/private.json")).status_code == 404
+    assert (await client.get(f"/documents/another-document/outputs/{output.id}/artifacts/run/markdown.md")).status_code == 404
+
+
+@pytest.mark.anyio
 async def test_upload_and_read_document_status(client, db_session) -> None:
     response = await client.post(
         "/documents/upload",

@@ -1,6 +1,6 @@
 # Scanofy Backend
 
-Week 1 backend scaffold for the Vietnamese Educational Document Intelligence System.
+Backend for the Vietnamese Educational Document Intelligence System.
 
 ## Runtime
 
@@ -41,7 +41,7 @@ python -m pytest
 - `GET /documents/{document_id}/status`
 - `DELETE /documents/{document_id}`
 
-MinerU parsing is operational. Page/block normalization is still minimal;
+MinerU parsing and Page/Block/Span normalization are operational;
 hierarchy building, RAG, and education features remain placeholders.
 
 ## MinerU Integration
@@ -67,4 +67,9 @@ MINERU_TIMEOUT_SECONDS=900
 The adapter uses local parsing with automatic OCR mode and exports a ZIP that
 contains Markdown, middle JSON, structured JSON, and image assets. PDF/DOCX
 uploads routed to MinerU are parsed, stored in
-`ocr_outputs`, and minimally normalized into `pages` and `blocks`.
+`ocr_outputs`, and normalized into `pages`, `blocks`, and `spans`.
+
+Each parse retains its own artifacts, source hash and CLI version. Missing or
+invalid output fails explicitly; the original document remains readable.
+See [MinerU pipeline and recovery commands](../docs/MINERU_PIPELINE.md) for
+supported artifacts, API access, renormalization, real smoke tests and diagrams.

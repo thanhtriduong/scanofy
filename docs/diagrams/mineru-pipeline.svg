@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1710" viewBox="0 0 1680 1710"><rect width="100%" height="100%" fill="white"/>
+<text x="80" y="89.4" font-family="Arial, sans-serif" font-size="40" fill="#201f20" text-anchor="start">SCANOFY · LUỒNG XỬ LÝ TÀI LIỆU MINERU</text>
+<text x="80" y="134.78" font-family="Arial, sans-serif" font-size="23" fill="#494949" text-anchor="start">Xử lý nền song song với đọc PDF · Sơ đồ theo mã nguồn triển khai</text>
+<text x="520" y="199.94" font-family="Arial, sans-serif" font-size="29" fill="#201f20" text-anchor="middle">BACKEND VÀ DỮ LIỆU</text>
+<text x="1350" y="199.94" font-family="Arial, sans-serif" font-size="29" fill="#201f20" text-anchor="middle">TRẢI NGHIỆM NGƯỜI DÙNG</text>
+<rect x="80" y="230" width="880" height="100" rx="12" fill="#f7f6f6" stroke="#c8c7c7" stroke-width="2"/>
+<text x="520.0" y="268.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">1. Upload và lưu file gốc</text>
+<text x="520.0" y="302.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">Kiểm tra đầu vào · Tạo Document và job queued</text>
+<rect x="80" y="385" width="880" height="100" rx="12" fill="#f7f6f6" stroke="#c8c7c7" stroke-width="2"/>
+<text x="520.0" y="423.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">2. File Profiler</text>
+<text x="520.0" y="457.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">Đo trang, text, ảnh, kích thước và rotation</text>
+<path d="M520,330 L520,385" stroke="#606060" stroke-width="3"/><polygon points="520,385 513,373 527,373" fill="#606060"/>
+<rect x="80" y="540" width="880" height="100" rx="12" fill="#f7f6f6" stroke="#c8c7c7" stroke-width="2"/>
+<text x="520.0" y="578.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">3. Router</text>
+<text x="520.0" y="612.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">Chọn MinerU cho PDF số / hỗn hợp và DOCX</text>
+<path d="M520,485 L520,540" stroke="#606060" stroke-width="3"/><polygon points="520,540 513,528 527,528" fill="#606060"/>
+<rect x="80" y="695" width="880" height="100" rx="12" fill="#f7f6f6" stroke="#c8c7c7" stroke-width="2"/>
+<text x="520.0" y="733.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">4. MinerU CLI</text>
+<text x="520.0" y="767.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">mineru-kit parse · Output riêng từng lần chạy</text>
+<path d="M520,640 L520,695" stroke="#606060" stroke-width="3"/><polygon points="520,695 513,683 527,683" fill="#606060"/>
+<rect x="80" y="850" width="880" height="100" rx="12" fill="#f7f6f6" stroke="#c8c7c7" stroke-width="2"/>
+<text x="520.0" y="888.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">5. Kiểm tra artifact và lưu nguồn</text>
+<text x="520.0" y="922.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">middle_json.json + markdown.md · Manifest, hash và raw output</text>
+<path d="M520,795 L520,850" stroke="#606060" stroke-width="3"/><polygon points="520,850 513,838 527,838" fill="#606060"/>
+<rect x="80" y="1005" width="880" height="100" rx="12" fill="#f7f6f6" stroke="#c8c7c7" stroke-width="2"/>
+<text x="520.0" y="1043.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">6. Chuẩn hóa Page / Block / Span</text>
+<text x="520.0" y="1077.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">Kiểm tra schema, bbox, reading order và số trang</text>
+<path d="M520,950 L520,1005" stroke="#606060" stroke-width="3"/><polygon points="520,1005 513,993 527,993" fill="#606060"/>
+<rect x="80" y="1160" width="880" height="100" rx="12" fill="#f7f6f6" stroke="#c8c7c7" stroke-width="2"/>
+<text x="520.0" y="1198.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">7. Lưu dữ liệu chuẩn hóa</text>
+<text x="520.0" y="1232.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">Giao dịch database · Giữ ID theo vị trí khi normalize lặp</text>
+<path d="M520,1105 L520,1160" stroke="#606060" stroke-width="3"/><polygon points="520,1160 513,1148 527,1148" fill="#606060"/>
+<rect x="80" y="1315" width="880" height="100" rx="12" fill="#eef2ff" stroke="#2e5bff" stroke-width="2"/>
+<text x="520.0" y="1353.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">8. Hoàn tất</text>
+<text x="520.0" y="1387.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">Document: parsed · Job: completed</text>
+<path d="M520,1260 L520,1315" stroke="#606060" stroke-width="3"/><polygon points="520,1315 513,1303 527,1303" fill="#606060"/>
+<rect x="1100" y="230" width="500" height="100" rx="12" fill="#f7f6f6" stroke="#c8c7c7" stroke-width="2"/>
+<text x="1350.0" y="268.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">Mở Document Workspace</text>
+<text x="1350.0" y="302.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">Ngay sau upload response; không đợi MinerU</text>
+<path d="M960,280 L1100,280" stroke="#2e5bff" stroke-width="3"/><polygon points="1100,280 1088,273 1088,287" fill="#2e5bff"/>
+<rect x="1100" y="385" width="500" height="100" rx="12" fill="#eef2ff" stroke="#2e5bff" stroke-width="2"/>
+<text x="1350.0" y="423.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">Đọc PDF gốc</text>
+<text x="1350.0" y="457.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">Cuộn trang · Zoom · Thumbnail</text>
+<path d="M1350,330 L1350,385" stroke="#606060" stroke-width="3"/><polygon points="1350,385 1343,373 1357,373" fill="#606060"/>
+<rect x="1100" y="540" width="500" height="100" rx="12" fill="#f7f6f6" stroke="#c8c7c7" stroke-width="2"/>
+<text x="1350.0" y="578.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">Nhánh OCR khác</text>
+<text x="1350.0" y="612.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">awaiting_ocr · Adapter chưa tích hợp</text>
+<path d="M960,590 L1100,590" stroke="#606060" stroke-width="3"/><polygon points="1100,590 1088,583 1088,597" fill="#606060"/>
+<rect x="1100" y="850" width="500" height="100" rx="12" fill="#f7f6f6" stroke="#c8c7c7" stroke-width="2"/>
+<text x="1350.0" y="888.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">Theo dõi trạng thái</text>
+<text x="1350.0" y="922.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">Polling; đang xử lý → parsed / failed</text>
+<path d="M1600,435 L1640,435" stroke="#606060" stroke-width="3"/><polygon points="1640,435 1628,428 1628,442" fill="#606060"/>
+<path d="M1640,435 L1640,900" stroke="#606060" stroke-width="3"/><polygon points="1640,900 1633,888 1647,888" fill="#606060"/>
+<path d="M1640,900 L1600,900" stroke="#606060" stroke-width="3"/><polygon points="1600,900 1612,893 1612,907" fill="#606060"/>
+<rect x="1100" y="1005" width="500" height="100" rx="12" fill="#fff7ed" stroke="#a16207" stroke-width="2"/>
+<text x="1350.0" y="1043.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">Nếu phân tích lỗi</text>
+<text x="1350.0" y="1077.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">Vẫn đọc file gốc · Thử lại tạo job mới</text>
+<path d="M1350,950 L1350,1005" stroke="#606060" stroke-width="3"/><polygon points="1350,1005 1343,993 1357,993" fill="#606060"/>
+<rect x="1100" y="1315" width="500" height="100" rx="12" fill="#eef2ff" stroke="#2e5bff" stroke-width="2"/>
+<text x="1350.0" y="1353.78" font-family="Arial, sans-serif" font-size="23" fill="#201f20" text-anchor="middle">Mở cấu trúc tài liệu</text>
+<text x="1350.0" y="1387.48" font-family="Arial, sans-serif" font-size="18" fill="#494949" text-anchor="middle">Mục lục · Overlay block · Nội dung nguồn</text>
+<path d="M960,1365 L1100,1365" stroke="#2e5bff" stroke-width="3"/><polygon points="1100,1365 1088,1358 1088,1372" fill="#2e5bff"/>
+<text x="80" y="1498.06" font-family="Arial, sans-serif" font-size="21" fill="#201f20" text-anchor="start">Nhánh lỗi áp dụng cho profiler, CLI, artifact, normalize và lưu database.</text>
+<text x="80" y="1543.06" font-family="Arial, sans-serif" font-size="21" fill="#201f20" text-anchor="start">Retry chạy lại từ File Profiler. Renormalize dùng raw đã lưu, mặc định dry-run và không gọi model.</text>
+<text x="80" y="1588.06" font-family="Arial, sans-serif" font-size="21" fill="#201f20" text-anchor="start">PaddleOCR / Chandra / Vintern là nhánh dự kiến; sơ đồ không khẳng định đã có adapter hoạt động.</text>
+<text x="80" y="1645.48" font-family="Arial, sans-serif" font-size="18" fill="#606060" text-anchor="start">Nguồn: backend Scanofy · Hình mô tả kiến trúc, không phải số liệu benchmark OCR.</text>
+</svg>

@@ -54,6 +54,7 @@ class DocumentProcessingService:
                 job.current_step = "mineru_parsing"
                 self.db.commit()
                 ocr_result = self._run_async(self.mineru.parse(file_path))
+                MinerUAdapter.validate_output(ocr_result.get("raw_output"))
 
                 ocr_output = OCROutput(
                     document_id=document.id,
@@ -70,6 +71,8 @@ class DocumentProcessingService:
                 self.db.commit()
 
                 normalized = self.normalizer.normalize(ocr_result)
+                if profile.get("page_count") is not None and len(normalized["pages"]) != profile["page_count"]:
+                    raise RuntimeError("MinerU page count differs from the original PDF; normalized output was not published.")
                 measured_pages = {page["page_number"]: page for page in profile.get("pages", [])}
                 for page in normalized.get("pages", []):
                     measured = measured_pages.get(page["page_number"])
