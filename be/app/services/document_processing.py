@@ -112,7 +112,7 @@ class DocumentProcessingService:
                 image_url=page_data.get("image_url"),
                 raw_text=page_data.get("raw_text"),
             )
-            for field in ("width", "height", "image_url", "raw_text"):
+            for field in ("width", "height", "rotation", "image_url", "raw_text"):
                 setattr(page, field, page_data.get(field))
             self.db.add(page)
             self.db.flush()
@@ -144,6 +144,9 @@ class DocumentProcessingService:
                     for field in ("block_type", "text", "bbox", "confidence", "source_engine", "raw_json"):
                         setattr(block, field, block_data.get(field))
                 self.db.add(block)
+                for field in ("is_handwritten", "quality_score", "coordinate_system", "heading_level"):
+                    setattr(block, field, block_data.get(field))
+                block.needs_review = block_data.get("needs_review", False)
                 self.db.flush()
                 previous = {span.reading_order: span for span in block.spans}
                 retained_spans = []

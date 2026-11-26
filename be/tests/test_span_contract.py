@@ -24,6 +24,38 @@ def test_span_geometry_is_not_inherited_from_block():
     assert paragraph["spans"][1]["coordinate_system"] == "normalized_0_1"
 
 
+def test_shared_normalized_fixture_and_schema():
+    from app.schemas.normalized import NormalizedDocument
+    root = Path(__file__).resolve().parents[2] / "shared/contracts"
+    fixture = json.loads((root / "normalized-document.fixture.json").read_text(encoding="utf-8"))
+    schema = json.loads((root / "normalized-document.schema.json").read_text(encoding="utf-8"))
+    assert NormalizedDocument.model_validate(fixture).model_dump() == Normalizer().normalize(fixture_output())
+    assert schema == NormalizedDocument.model_json_schema()
+    title = fixture["blocks"][0]
+    assert title["block_type"] == "heading"
+    assert title["is_handwritten"] is None
+    assert title["quality_score"] is None
+
+
+@pytest.mark.parametrize("engine,source,expected", [("mineru", "paragraph_title", "heading"), ("paddleocr", "formula", "equation"), ("chandra", "section_header", "heading"), ("vintern", "text", "paragraph"), ("mineru", "unrecognized", "unknown")])
+def test_block_type_mapping(engine, source, expected):
+    from app.services.block_types import canonical_block_type
+    assert canonical_block_type(engine, source) == expected
+
+
+def test_normalized_contract_rejects_invalid_quality_and_page_reference():
+    from app.schemas.normalized import NormalizedDocument
+    from pydantic import ValidationError
+    fixture = Normalizer().normalize(fixture_output())
+    fixture["blocks"][0]["quality_score"] = 1.2
+    with pytest.raises(ValidationError):
+        NormalizedDocument.model_validate(fixture)
+    fixture["blocks"][0]["quality_score"] = None
+    fixture["blocks"][0]["page_number"] = 99
+    with pytest.raises(ValidationError):
+        NormalizedDocument.model_validate(fixture)
+
+
 @pytest.mark.anyio
 async def test_spans_api_repeat_normalization_and_delete(client, db_session):
     uploaded = await client.post("/documents/upload", files={"file": ("fixture.pdf", b"%PDF-test", "application/pdf")})

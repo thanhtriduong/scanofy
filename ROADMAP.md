@@ -99,13 +99,13 @@ Tài liệu đầu vào
 
 ### 4.3. Chốt data contract
 
-- [ ] Chốt `Page` schema: page number, width, height, source image.
-- [ ] Chốt `Block` schema: type, text, bbox, reading order, confidence, engine.
+- [x] Chốt `Page` schema: page number, width, height, source image; rotation nullable, chưa biết giữ null.
+- [x] Chốt `Block` schema: canonical type, text, bbox, reading order, confidence, engine; giữ loại gốc trong raw_json.
 - [x] Bổ sung `Span` model/schema, quan hệ với block và API lọc theo trang/block.
-- [ ] Thêm cờ `is_handwritten`, `needs_review` và `quality_score`.
-- [ ] Quy định hệ tọa độ bbox và cách scale lên PDF.js viewer.
-- [ ] Quy định mapping block type giữa MinerU, PaddleOCR, Chandra và Vintern.
-- [ ] Tạo fixture JSON chuẩn dùng chung cho `be`, `fe` và `ai`.
+- [x] Thêm cờ `is_handwritten`, `needs_review` và `quality_score`; không tự suy đoán điểm/chữ viết tay khi thiếu dữ liệu.
+- [x] Quy định hệ tọa độ bbox và cách scale lên PDF.js viewer; benchmark rotation/CropBox thực hiện sau.
+- [x] Quy định mapping block type giữa MinerU, PaddleOCR, Chandra và Vintern; adapter/kiểm chứng ba engine sau vẫn thuộc tuần 3.
+- [x] Tạo JSON Schema và fixture chuẩn dùng chung tại `shared/contracts` cho `be`, `fe` và `ai`.
 
 ### 4.4. Thiết lập kiểm thử
 

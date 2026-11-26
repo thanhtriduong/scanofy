@@ -120,6 +120,6 @@ def test_normalizer_maps_mineru_v4_pages_and_normalized_geometry() -> None:
 
     assert normalized["pages"][0]["page_number"] == 1
     assert normalized["pages"][0]["raw_text"] == "1 Giới thiệu"
-    assert normalized["blocks"][0]["block_type"] == "paragraph_title"
+    assert normalized["blocks"][0]["block_type"] == "heading"
     assert normalized["blocks"][0]["bbox"] == [0.1, 0.2, 0.8, 0.3]
     assert normalized["blocks"][0]["raw_json"]["coordinate_system"] == "normalized_0_1"

@@ -1,10 +1,15 @@
 import math
+from app.schemas.normalized import NormalizedDocument
+from app.services.block_types import canonical_block_type
 
 
 class Normalizer:
     """Normalize parser output into Scanofy's page and block contract."""
 
     def normalize(self, raw_output: dict) -> dict:
+        return NormalizedDocument.model_validate(self._normalize(raw_output)).model_dump()
+
+    def _normalize(self, raw_output: dict) -> dict:
         parser_output = raw_output.get("raw_output") or raw_output
         mineru_pages = parser_output.get("pages") if isinstance(parser_output, dict) else None
         if isinstance(mineru_pages, list) and mineru_pages:
@@ -65,10 +70,15 @@ class Normalizer:
                 blocks.append(
                     {
                         "page_number": page_number,
-                        "block_type": raw_block.get("type", "unknown"),
+                        "block_type": canonical_block_type(source_engine, raw_block.get("type", "unknown")),
                         "text": text or None,
                         "corrected_text": None,
                         "bbox": bbox,
+                        "coordinate_system": "normalized_0_1" if bbox else None,
+                        "is_handwritten": raw_block.get("is_handwritten"),
+                        "needs_review": bool(raw_block.get("needs_review")) or bbox is None or canonical_block_type(source_engine, raw_block.get("type", "unknown")) == "unknown",
+                        "quality_score": raw_block.get("quality_score"),
+                        "heading_level": raw_block.get("level"),
                         "reading_order": raw_block.get("index", reading_order),
                         "confidence": raw_block.get("confidence"),
                         "source_engine": source_engine,
@@ -83,9 +93,10 @@ class Normalizer:
             pages.append(
                 {
                     "page_number": page_number,
-                    "width": None,
-                    "height": None,
-                    "image_url": None,
+                    "width": raw_page.get("width"),
+                    "height": raw_page.get("height"),
+                    "image_url": raw_page.get("image_url"),
+                    "rotation": raw_page.get("rotation"),
                     "raw_text": "\n\n".join(page_text) or None,
                 }
             )

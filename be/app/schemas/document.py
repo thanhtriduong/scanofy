@@ -63,6 +63,7 @@ class PageRead(BaseModel):
     page_number: int
     width: float | None
     height: float | None
+    rotation: int | None = None
     image_url: str | None
     raw_text: str | None
     created_at: datetime
@@ -83,6 +84,10 @@ class BlockRead(BaseModel):
     confidence: float | None
     correction_confidence: float | None
     needs_review: bool
+    is_handwritten: bool | None = None
+    quality_score: float | None = Field(default=None, ge=0, le=1)
+    coordinate_system: str | None = None
+    heading_level: int | None = None
     source_engine: str | None
     raw_json: dict | None
     created_at: datetime
@@ -95,6 +100,8 @@ class DocumentPreviewPage(BaseModel):
     width: float | None
     height: float | None
     raw_text: str | None
+    rotation: int | None = None
+    image_url: str | None = None
 
 
 class SpanRead(BaseModel):
@@ -125,6 +132,9 @@ class DocumentPreviewBlock(BaseModel):
     id: str
     parse_run_id: str | None = None
     heading_level: int | None = None
+    is_handwritten: bool | None = None
+    needs_review: bool = False
+    quality_score: float | None = None
     spans: list[DocumentPreviewSpan] = Field(default_factory=list)
     page_number: int
     block_type: str

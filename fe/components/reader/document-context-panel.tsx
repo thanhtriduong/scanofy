@@ -33,7 +33,7 @@ export function DocumentContextPanel({
   const outline = useMemo(
     () =>
       blocks.filter((block) =>
-        ["doc_title", "paragraph_title", "title"].includes(block.block_type),
+        ["doc_title", "paragraph_title", "title", "heading"].includes(block.block_type),
       ),
     [blocks],
   );
@@ -254,6 +254,9 @@ function MetadataRow({ label, value }: { label: string; value: string }) {
 
 function formatBlockType(type: string): string {
   const labels: Record<string, string> = {
+    title: "Tiêu đề tài liệu",
+    heading: "Tiêu đề mục",
+    paragraph: "Đoạn văn",
     doc_title: "Tiêu đề tài liệu",
     paragraph_title: "Tiêu đề mục",
     text: "Đoạn văn",

@@ -55,6 +55,8 @@ export type DocumentPreviewPage = {
   page_number: number;
   width: number | null;
   height: number | null;
+  rotation?: 0 | 90 | 180 | 270 | null;
+  image_url?: string | null;
   raw_text: string | null;
 };
 
@@ -76,6 +78,9 @@ export type DocumentPreviewBlock = {
   id: string;
   parse_run_id?: string | null;
   heading_level?: number | null;
+  is_handwritten?: boolean | null;
+  needs_review?: boolean;
+  quality_score?: number | null;
   spans?: Pick<DocumentSpan, "reading_order" | "span_type" | "text" | "bbox" | "coordinate_system">[];
   page_number: number;
   block_type: string;

@@ -1,6 +1,39 @@
-# Scanofy document contract v1
+# Scanofy document contract v1.1
 
-Status: implemented Page/Block/Span contract for MinerU 4; other engine mappings are deferred.
+## Shared boundary (roadmap 4.3)
+
+Canonical JSON Schema: `shared/contracts/normalized-document.schema.json`.
+Canonical synthetic fixture: `shared/contracts/normalized-document.fixture.json`.
+Pydantic implementation: `be/app/schemas/normalized.py`; tests reject schema drift.
+Backend normalization validates this boundary before returning data. Frontend/AI can consume the shared JSON without importing engine fields.
+Pages are unique, blocks reference existing pages and have unique reading order per page, spans have contiguous zero-based order.
+
+Page dimensions and source image may be null if unavailable. Rotation is nullable, otherwise 0/90/180/270 degrees. This defines storage semantics; automatic measurement and transform benchmarking remain separate work.
+Block `is_handwritten` is tri-state: true/false only when evidence exists, null means unknown. `quality_score` is nullable 0..1, not a substituted engine confidence. `needs_review` is boolean; the MinerU normalizer flags missing/invalid geometry and unknown block type. A false flag is not a quality guarantee.
+Block coordinate system and heading level are now explicit persisted columns. Older rows remain nullable until re-normalization.
+
+### Canonical block types and adapter mapping
+
+Types: title, heading, paragraph, list, table, image, equation, caption, header, footer, page_number, footnote, reference, unknown.
+Executable mapping: `be/app/services/block_types.py`. Original labels remain in `raw_json.type`.
+
+| Engine | Example input aliases → canonical types | Status |
+| --- | --- | --- |
+| MinerU | doc_title → title; paragraph_title → heading; text → paragraph; ref_text → reference; page_footnote → footnote | Used by current normalizer |
+| PaddleOCR | text → paragraph; formula → equation; figure → image; table_title → caption | Planned adapter vocabulary; real output verification pending |
+| Chandra | section_header → heading; list_item → list; picture → image | Planned adapter vocabulary; real output verification pending |
+| Vintern | section_header → heading; text → paragraph; formula → equation | Required structured adapter labels; model output is not assumed structured |
+
+Unknown labels map to unknown with needs_review; adapter registration does not make an engine runnable.
+
+### PDF.js scaling rule
+
+For validated normalized coordinates on the same oriented page: left = x0 × rendered CSS width; top = y0 × rendered CSS height; width = (x1−x0) × rendered CSS width; height = (y1−y0) × rendered CSS height. Use canvas CSS size, not backing-store pixels: devicePixelRatio only controls raster sharpness.
+When CropBox/rotation differs from the parser coordinate frame, the adapter must convert using verified source metadata before declaring normalized_0_1. Without evidence, keep geometry null; do not guess a rotation or clamp invalid boxes. Existing viewer alignment has only been verified on ordinary sample PDFs.
+
+Migration `202611260002` adds nullable Page.rotation and Block evidence fields. No rewriting of existing documents is performed.
+
+Status: implemented Page/Block/Span contract for MinerU 4; other engine adapters and mapping verification are deferred.
 Fixture: `be/tests/fixtures/mineru_contract.json` is synthetic Vietnamese content following observed MinerU 4 output, not a copied user document.
 
 ## Coordinates and numbering
@@ -19,7 +52,7 @@ One current page per document/page number. Dimensions are currently unknown in M
 ## Block
 
 `id`, `document_id`, `page_id`, `page_number`, `block_type`, `text`, `corrected_text`, `bbox`, `reading_order`, `confidence`, `source_engine`, `raw_json`.
-Preserve engine block types, including unknown types; no lossy cross-engine mapping yet.
+Expose canonical block types; preserve original labels in raw_json. Legacy stored rows can retain old labels until re-normalized.
 Heading level is retained in `raw_json.level` and exposed in preview as `heading_level`.
 Confidence is nullable; do not invent scores. Corrections are separate and cleared when source text changes.
 
@@ -50,4 +83,4 @@ Missing span bbox stays null; never inherit a block bbox. OCR geometry and PDF.j
 
 ## Remaining work
 
-Span text selection/overlay UI, source-version capture, immutable normalized parse snapshots, legacy backfill command, page rotation metadata/transforms, and validated multi-engine mappings.
+Span text selection/overlay UI, source-version capture, immutable normalized parse snapshots, legacy backfill command, measured page rotation/transforms, and verification of multi-engine adapter mappings.
