@@ -1,0 +1,5 @@
+# Optional CPU inference; install into the existing be/.venv.
+paddleocr==3.3.2
+paddlepaddle==3.2.2
+paddlex==3.3.13
+pypdfium2==5.15.2

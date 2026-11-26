@@ -66,7 +66,7 @@ Tài liệu đầu vào
 - [x] File Profiler v1 đo PDF page/text/image evidence, ảnh và DOCX; chữ viết tay chưa biết giữ null.
 - [x] MinerU 4 normalizer giữ Page/Block/Span và bbox 0–1 hợp lệ.
 - [ ] Chandra adapter mới là placeholder.
-- [ ] Chưa có PaddleOCR adapter và Vintern adapter.
+- [x] PaddleOCR CPU adapter cho ảnh/PDF scan đã chạy thật; Vintern adapter còn chờ tuần 3.
 - [x] Đã có backend unit/API tests và script kiểm tra toàn dự án.
 - [x] Có PDF.js viewer cuộn liên tục, block overlay và mục lục heading.
 - [ ] Hierarchy tree có quan hệ cha–con chưa triển khai.
@@ -160,11 +160,12 @@ block có bbox; API trả dữ liệu đủ để vẽ overlay.
 - [x] Nền tảng Engine Registry/Orchestrator, execution plan và envelope chung; MinerU đi qua luồng chung. Xem `docs/ENGINE_ORCHESTRATION.md`.
 - [x] Kiểm chứng engine giả có raw format riêng dùng chung persistence; giữ routing/API hiện có.
 - [ ] Khái quát hóa artifact storage, thêm task theo trang/vùng, lịch sử attempts và worker/queue bền vững theo từng batch.
-- [ ] PaddleOCR adapter cho scan và ảnh văn bản in.
+- [x] PaddleOCR adapter cho scan và ảnh văn bản in; worker CPU dùng cùng venv, chuẩn hóa dòng/bbox/confidence. Xem `docs/PADDLEOCR_PIPELINE.md`.
 - [ ] Chandra adapter cho ảnh chữ viết tay/layout phức tạp.
 - [ ] Vintern-1B adapter hoặc remote inference wrapper.
 - [ ] Thêm lựa chọn upload: tự động, văn bản in, chữ viết tay, hỗn hợp.
 - [ ] Tiền xử lý ảnh: rotate, perspective correction, deskew, contrast, denoise.
+  Đã có EXIF và PDF native rotation/CropBox; perspective/deskew/contrast/denoise chưa triển khai.
 - [ ] Router dùng profile thật và lựa chọn người dùng.
 - [ ] Quality gate và fallback rule.
 - [ ] Normalize output của mọi engine về cùng schema.

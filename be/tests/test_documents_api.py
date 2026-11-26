@@ -38,6 +38,29 @@ async def test_artifact_access_is_manifest_and_document_scoped(client, db_sessio
 
 
 @pytest.mark.anyio
+async def test_shared_ocr_artifacts_and_delete_preserve_legacy_support(client, db_session):
+    document = Document(filename="scan.png", file_type="png", storage_url="unused", status="parsed")
+    db_session.add(document)
+    db_session.flush()
+    settings = get_settings()
+    for root in (settings.mineru_output_root, settings.ocr_output_root):
+        artifact = root / document.id / "run" / "text.md"
+        artifact.parent.mkdir(parents=True)
+        artifact.write_text("lesson", encoding="utf-8")
+    output = OCROutput(document_id=document.id, engine="paddleocr", raw_output={"_scanofy": {
+        "storage_kind": "ocr", "artifacts": [{"path": "run/text.md"}, {"path": "../../private.txt"}]}})
+    db_session.add(output)
+    db_session.commit()
+    url = f"/documents/{document.id}/outputs/{output.id}/artifacts"
+    assert (await client.get(f"{url}/run/text.md")).status_code == 200
+    # Encoded traversal must not escape the configured document root, even if listed.
+    assert (await client.get(f"{url}/%2E%2E/%2E%2E/private.txt")).status_code == 404
+    assert (await client.delete(f"/documents/{document.id}")).status_code == 204
+    assert not (settings.ocr_output_root / document.id).exists()
+    assert not (settings.mineru_output_root / document.id).exists()
+
+
+@pytest.mark.anyio
 async def test_upload_and_read_document_status(client, db_session) -> None:
     response = await client.post(
         "/documents/upload",

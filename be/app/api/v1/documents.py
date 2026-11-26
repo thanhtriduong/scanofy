@@ -30,6 +30,7 @@ from app.schemas.document import (
 )
 from app.services.document_processing import run_document_processing
 from app.services.engine_orchestrator import default_orchestrator
+from app.services.artifact_storage import artifact_root
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -44,7 +45,10 @@ def get_output_artifact(document_id: str, output_id: str, artifact_path: str, db
     manifest = (output.raw_output or {}).get("_scanofy", {}).get("artifacts", [])
     if artifact_path not in {entry["path"] for entry in manifest}:
         raise HTTPException(status_code=404, detail="Artifact not in output manifest.")
-    root = (get_settings().mineru_output_root / document_id).resolve()
+    try:
+        root = (artifact_root(output.raw_output or {}) / document_id).resolve()
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Unknown artifact storage.") from exc
     target = (root / artifact_path).resolve()
     if not target.is_relative_to(root) or not target.is_file():
         raise HTTPException(status_code=404, detail="Artifact file not found.")
@@ -368,7 +372,7 @@ def delete_document(document_id: str, db: Session = Depends(get_db)) -> None:
 
     settings = get_settings()
     targets = []
-    for root in (settings.upload_root, settings.mineru_output_root):
+    for root in {settings.upload_root, settings.mineru_output_root, settings.ocr_output_root}:
         target = root / document.id
         if target.is_symlink() or target.resolve().parent != root.resolve():
             raise HTTPException(status_code=400, detail="Invalid document storage path.")

@@ -2,6 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 
 BE_ROOT = Path(__file__).resolve().parents[2]
 
@@ -24,6 +25,13 @@ class Settings(BaseSettings):
     mineru_output_dir: Path = Path("storage/mineru_outputs")
     mineru_ocr_mode: str = "auto"
     mineru_timeout_seconds: int = 900
+    ocr_output_dir: Path = Path("storage/ocr_outputs")
+    paddleocr_enabled: bool = True
+    paddleocr_lang: str = "vi"
+    paddleocr_timeout_seconds: int = Field(default=900, ge=1)
+    paddleocr_render_dpi: int = Field(default=144, ge=72, le=300)
+    paddleocr_max_pages: int = Field(default=200, ge=1)
+    paddleocr_max_pixels: int = Field(default=25_000_000, ge=1)
     chandra_enabled: bool = True
     vintern_enabled: bool = False
 
@@ -44,6 +52,10 @@ class Settings(BaseSettings):
     @property
     def mineru_output_root(self) -> Path:
         return self._resolve_workspace_path(self.mineru_output_dir)
+
+    @property
+    def ocr_output_root(self) -> Path:
+        return self._resolve_workspace_path(self.ocr_output_dir)
 
 
 @lru_cache

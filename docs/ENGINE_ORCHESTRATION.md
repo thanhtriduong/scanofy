@@ -11,7 +11,7 @@ Vai trò ưu tiên sau đây là chính sách dự kiến, cần benchmark để
 | Engine | Vai trò ưu tiên | Trạng thái |
 | --- | --- | --- |
 | MinerU | Document parsing, PDF số, bảng/công thức | Đã đăng ký, chạy thật |
-| PaddleOCR | OCR văn bản in, phát hiện vùng chữ | Chưa tích hợp |
+| PaddleOCR | OCR văn bản in, phát hiện vùng chữ | Đã đăng ký, CPU ảnh/PDF scan; xem `PADDLEOCR_PIPELINE.md` |
 | Chandra | Chữ viết tay, biểu mẫu và layout phức tạp | Adapter cũ là placeholder, chưa đăng ký |
 | Vintern | OCR/đối chiếu tiếng Việt, tài liệu đặc thù | Chưa tích hợp |
 
@@ -85,8 +85,8 @@ Engine không có geometry/confidence không được tự tạo các giá trị
   riêng. Document giữ plan mới nhất, các raw output thành công giữ plan của lần đó.
 - Lỗi normalize vẫn giữ raw đã lưu, như pipeline MinerU trước khi refactor.
 - Không thay schema database và không backfill dữ liệu người dùng.
-- Lệnh `renormalize` hiện vẫn giới hạn MinerU; mở rộng qua registry ở batch phục hồi
-  multi-engine sau khi có adapter thứ hai và fixture tương ứng.
+- Lệnh `renormalize` dùng registry cho output mới nhất của engine được hỗ trợ;
+  đã kiểm chứng MinerU và PaddleOCR.
 
 ## Thêm engine
 
@@ -97,13 +97,13 @@ Engine không có geometry/confidence không được tự tạo các giá trị
 
 Không thêm nhánh engine vào service persistence hoặc viewer. Nếu engine chỉ nhận
 ảnh mà cần xử lý PDF, adapter/worker phải render trang, lưu phép biến đổi tọa độ
-và chuẩn hóa về trang nguồn. Đây là phần việc của batch PaddleOCR.
-Artifact API hiện dùng thư mục cấu hình mang tên lịch sử `mineru_output_root`;
-cần khái quát hóa storage root/manifest trước khi phục vụ artifact của engine thứ hai.
+và chuẩn hóa về trang nguồn; PaddleOCR đã thực hiện bước này.
+Artifact API dùng resolver theo storage kind: root OCR chung cho engine mới,
+root MinerU cũ được giữ tương thích. Manifest không được chỉ định root tùy ý.
 
 ## Các bước mở rộng tiếp theo
 
-1. PaddleOCR: adapter, normalizer, render PDF scan, geometry và artifact storage chung.
+1. Đã hoàn thành PaddleOCR batch ảnh/PDF scan và artifact storage chung; benchmark chất lượng còn chờ.
 2. Chandra: khôi phục integration cũ, lựa chọn loại nội dung trên upload.
 3. Vintern: tích hợp và bộ dữ liệu đối chiếu tiếng Việt.
 4. Kế hoạch nhiều task theo trang/vùng; provenance và phép biến đổi tọa độ từng task.

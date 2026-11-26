@@ -124,10 +124,16 @@ def default_orchestrator() -> EngineOrchestrator:
     # Composition root: new engines are added here, not in the processing service.
     from app.services.normalizer import Normalizer
     from app.services.ocr_engines.mineru_adapter import MinerUAdapter
+    from app.services.ocr_engines.paddleocr_adapter import PaddleOCRAdapter
+    from app.services.paddleocr_normalizer import validate_paddle_output, normalize_paddle_output
 
     registry = EngineRegistry()
     registry.register(EngineBinding(
         EngineSpec("mineru", "document_parsing", ("pdf", "docx")),
         MinerUAdapter(), MinerUAdapter.validate_output, Normalizer().normalize,
+    ))
+    registry.register(EngineBinding(
+        EngineSpec("paddleocr", "general_ocr", ("pdf", "jpg", "jpeg", "png", "webp")),
+        PaddleOCRAdapter(), validate_paddle_output, normalize_paddle_output,
     ))
     return EngineOrchestrator(registry)

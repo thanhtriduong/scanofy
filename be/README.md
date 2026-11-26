@@ -76,4 +76,12 @@ supported artifacts, API access, renormalization, real smoke tests and diagrams.
 
 MinerU now executes through the shared engine registry/orchestrator. See
 [orchestration architecture and extension contract](../docs/ENGINE_ORCHESTRATION.md).
-Other engines remain unintegrated; their routes retain `awaiting_ocr`.
+PaddleOCR CPU now handles images/scanned PDFs through the same registry.
+Install its optional dependencies in the existing environment:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-paddleocr.txt
+```
+
+See [PaddleOCR setup, geometry and real smoke results](../docs/PADDLEOCR_PIPELINE.md).
+Chandra and Vintern remain unintegrated.

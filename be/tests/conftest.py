@@ -44,6 +44,7 @@ async def client(
     settings = get_settings()
     monkeypatch.setattr(settings, "upload_dir", tmp_path / "uploads")
     monkeypatch.setattr(settings, "mineru_output_dir", tmp_path / "mineru_outputs")
+    monkeypatch.setattr(settings, "ocr_output_dir", tmp_path / "ocr_outputs")
 
     def override_get_db() -> Generator[Session, None, None]:
         yield db_session

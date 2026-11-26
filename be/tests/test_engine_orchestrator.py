@@ -53,12 +53,13 @@ def test_registry_rejects_duplicate_and_mismatched_names():
 
 def test_planner_keeps_unintegrated_engine_pending():
     orchestrator = default_orchestrator()
-    plan = orchestrator.plan({"file_type": "png"})
-    assert plan.engine == "paddleocr"
+    profile = {"file_type": "png", "handwriting_score": 0.9}
+    plan = orchestrator.plan(profile)
+    assert plan.engine == "chandra"
     assert plan.status == "awaiting_engine"
     assert plan.max_attempts == 1
     with pytest.raises(ValueError, match="not registered"):
-        orchestrator.plan({"file_type": "png"}, "paddleocr")
+        orchestrator.plan(profile, "chandra")
 
 
 def test_planner_checks_capabilities_and_manual_choice():
@@ -87,7 +88,7 @@ async def test_executor_rejects_placeholder_and_wrong_engine(monkeypatch):
 async def test_executor_does_not_run_pending_plan():
     orchestrator = default_orchestrator()
     with pytest.raises(ValueError, match="not ready"):
-        await orchestrator.execute(orchestrator.plan({"file_type": "png"}), Path("unused.png"))
+        await orchestrator.execute(orchestrator.plan({"file_type": "png", "handwriting_score": 0.9}), Path("unused.png"))
 
 
 def test_normalization_checks_common_contract_and_source():

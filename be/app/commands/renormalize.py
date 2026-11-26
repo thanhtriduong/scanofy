@@ -1,4 +1,4 @@
-"""Preview/apply normalization from saved raw MinerU output without model calls."""
+"""Preview/apply normalization from saved raw engine output without model calls."""
 import argparse
 import json
 
@@ -9,9 +9,8 @@ from app.db.session import SessionLocal
 from app.models.document import Document
 from app.models.ocr_output import OCROutput
 from app.services.document_processing import DocumentProcessingService
-from app.services.normalizer import Normalizer
+from app.services.engine_orchestrator import default_orchestrator
 from app.services.file_profiler import FileProfiler
-from app.services.ocr_engines.mineru_adapter import MinerUAdapter
 
 
 def renormalize(db, document_id: str, apply: bool = False, reprofile: bool = False) -> dict:
@@ -20,11 +19,10 @@ def renormalize(db, document_id: str, apply: bool = False, reprofile: bool = Fal
         raise ValueError("Document not found.")
     if document.status in {"uploaded", "queued", "processing", "normalizing"}:
         raise ValueError("Document is busy; wait for the current job.")
-    output = db.scalars(select(OCROutput).where(OCROutput.document_id == document_id, OCROutput.engine == "mineru").order_by(desc(OCROutput.created_at), desc(OCROutput.id))).first()
+    output = db.scalars(select(OCROutput).where(OCROutput.document_id == document_id).order_by(desc(OCROutput.created_at), desc(OCROutput.id))).first()
     if output is None:
-        raise ValueError("No saved MinerU output. Run parsing first.")
-    MinerUAdapter.validate_output(output.raw_output)
-    normalized = Normalizer().normalize({"engine": output.engine, "raw_output": output.raw_output, "markdown_output": output.markdown_output})
+        raise ValueError("No saved engine output. Run parsing first.")
+    normalized = default_orchestrator().normalize({"engine": output.engine, "raw_output": output.raw_output, "markdown_output": output.markdown_output})
     profile = FileProfiler().profile(Path(document.storage_url), document.file_type) if reprofile else document.profile
     if profile and profile.get("page_count") is not None and len(normalized["pages"]) != profile["page_count"]:
         raise ValueError("Page count mismatch; no data was changed.")
