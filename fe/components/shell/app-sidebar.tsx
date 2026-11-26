@@ -30,7 +30,7 @@ export function AppSidebar() {
           type="button"
           disabled
           aria-label="Tìm kiếm — sắp có"
-          className="flex h-9 w-full cursor-not-allowed items-center gap-2 rounded-md border border-border bg-surface-raised px-3 text-sm text-muted-foreground opacity-70"
+          className="flex h-9 w-full cursor-not-allowed items-center gap-2 scanofy-control border border-border bg-surface-raised px-3 text-sm text-muted-foreground opacity-70"
         >
           <Search className="h-4 w-4" aria-hidden="true" />
           Tìm kiếm
@@ -47,7 +47,7 @@ export function AppSidebar() {
               type="button"
               disabled={!item.available}
               aria-current={item.active ? "page" : undefined}
-              className={`flex h-9 w-full items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors ${
+              className={`flex h-9 w-full items-center gap-3 scanofy-control px-3 text-sm font-medium transition-colors ${
                 item.active
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-55"
@@ -76,7 +76,7 @@ export function AppSidebar() {
           type="button"
           disabled
           aria-label="Cài đặt — sắp có"
-          className="flex h-9 w-full cursor-not-allowed items-center gap-3 rounded-md px-3 text-sm text-muted-foreground opacity-70"
+          className="flex h-9 w-full cursor-not-allowed items-center gap-3 scanofy-control px-3 text-sm text-muted-foreground opacity-70"
         >
           <Settings className="h-4 w-4" aria-hidden="true" />
           Cài đặt

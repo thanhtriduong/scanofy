@@ -64,11 +64,12 @@ Tài liệu đầu vào
 - [x] MinerU 4.2.3 chạy qua `mineru-kit` trong `be/.venv`.
 - [x] Docker Compose, backend và README cùng dùng `be/.env`.
 - [ ] File Profiler vẫn dùng dữ liệu giả định.
-- [ ] MinerU normalizer hiện gom toàn tài liệu thành một page và một block.
+- [x] MinerU 4 normalizer giữ Page/Block và bbox 0–1 hợp lệ; Span còn chờ triển khai.
 - [ ] Chandra adapter mới là placeholder.
 - [ ] Chưa có PaddleOCR adapter và Vintern adapter.
 - [x] Đã có backend unit/API tests và script kiểm tra toàn dự án.
-- [ ] Chưa có document viewer, block overlay và hierarchy tree.
+- [x] Có PDF.js viewer cuộn liên tục, block overlay và mục lục heading.
+- [ ] Hierarchy tree có quan hệ cha–con chưa triển khai.
 - [ ] Chưa có benchmark dataset và evaluation harness.
 
 ## 4. Checklist trước khi phát triển tính năng mới
@@ -141,7 +142,7 @@ theo dõi trạng thái thành công.
 - [ ] Parse `original_content_list_v2.json`.
 - [ ] Chuẩn hóa page, block, span, bbox, reading order và block type.
 - [ ] Lưu Markdown, ảnh và tham chiếu artifact cần thiết.
-- [ ] Làm pipeline idempotent để rerun không tạo dữ liệu trùng.
+- [x] Chuẩn hóa lại Page/Block không tạo dữ liệu trùng, giữ ID theo vị trí trang/reading order; test lặp đã qua.
 - [ ] Thêm API trả page/block/span theo trang.
 - [ ] Viết test từ artifact MinerU hiện có.
 
@@ -169,12 +170,12 @@ block có bbox; API trả dữ liệu đủ để vẽ overlay.
 
 **Mục tiêu:** xem trực quan kết quả OCR trên tài liệu gốc.
 
-- [ ] Render PDF bằng PDF.js; render ảnh trực tiếp cho image input.
-- [ ] Vẽ block overlay bằng SVG/HTML.
+- [x] Render PDF bằng PDF.js; render ảnh trực tiếp cho image input.
+- [x] Vẽ block overlay bằng HTML.
 - [ ] Scale bbox chính xác khi zoom và resize.
 - [ ] Bật/tắt layer theo block type.
 - [ ] Chế độ span overlay dành cho debug/annotation.
-- [ ] Hover/click block để xem text và metadata.
+- [x] Click block để xem text và metadata; bỏ native hover title theo yêu cầu UX.
 - [ ] Danh sách block đồng bộ với trang đang xem.
 - [ ] Cho phép sửa text và block type ở mức cơ bản.
 - [ ] Tối ưu chỉ render overlay cho các trang đang nhìn thấy.
@@ -276,6 +277,11 @@ Thứ tự thực hiện gần nhất:
 ## 8. Nhật ký tiến độ
 
 ### Tuần hiện tại
+
+- Batch 2026-11-26: chốt luồng Library/upload/Workspace/retry/delete; 23 backend tests và frontend lint/build đạt. Sửa normalize lặp giữ Page/Block IDs, kiểm tra bbox hữu hạn 0–1, preview thêm parse_run_id và heading_level. Reader cuộn đến đúng block nguồn và chỉ bắt đầu render canvas gần viewport. Browser QA xác nhận heading trang 2 được highlight và đưa vào vùng nhìn; console không có lỗi.
+- Chưa hoàn tất: Span model/API, PDF text layer, giải phóng canvas xa viewport, benchmark rotation/CropBox và kiểm thử upload end-to-end với MinerU thật trong lần chốt này.
+
+- UX update 2026-11-25: Library là danh sách chính có tìm kiếm/lọc, upload thu gọn và kéo thả; upload lưu thành công mở thẳng Document Workspace. Workspace đọc file gốc khi đang phân tích hoặc lỗi, polling mở mục lục khi sẵn sàng; thêm retry API có kiểm tra trạng thái và giữ file gốc.
 
 - Đã làm:
   - Khảo sát lại cấu trúc và trạng thái dự án.

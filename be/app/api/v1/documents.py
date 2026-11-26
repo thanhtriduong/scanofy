@@ -167,7 +167,9 @@ def get_document_preview(
         pages = [DocumentPreviewPage(**page) for page in normalized.get("pages", [])]
         blocks = [
             DocumentPreviewBlock(
-                id=f"page-{block['page_number']}-block-{position}",
+                id=f"{latest_output.id}:page-{block['page_number']}-block-{position}",
+                parse_run_id=latest_output.id,
+                heading_level=(block.get("raw_json") or {}).get("level"),
                 page_number=block["page_number"],
                 block_type=block.get("block_type", "unknown"),
                 text=block.get("text"),
@@ -184,6 +186,7 @@ def get_document_preview(
             pages=pages,
             blocks=blocks,
             source_engine=normalized.get("source"),
+            parse_run_id=latest_output.id,
         )
 
     persisted_pages = list(
@@ -261,6 +264,32 @@ def get_ocr_outputs(document_id: str, db: Session = Depends(get_db)) -> list[OCR
     )
 
 
+@router.post("/{document_id}/retry", response_model=DocumentStatusResponse)
+def retry_document(
+    document_id: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
+) -> DocumentStatusResponse:
+    document = db.scalars(
+        select(Document).where(Document.id == document_id).with_for_update()
+    ).first()
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found.")
+    if document.status != "failed":
+        raise HTTPException(status_code=409, detail="Only failed analysis can be retried.")
+    source = Path(document.storage_url)
+    if not source.is_file():
+        raise HTTPException(status_code=404, detail="Document file not found.")
+    document.status = "uploaded"
+    job = DocumentJob(document_id=document.id, status="queued", current_step="queued")
+    db.add(job)
+    db.commit()
+    db.refresh(job)
+    background_tasks.add_task(run_placeholder_processing, document.id, job.id, str(source))
+    return DocumentStatusResponse(
+        document_id=document.id, status=document.status, profile=document.profile,
+        router_decision=document.router_decision, latest_job=job,
+    )
+
+
 @router.get("/{document_id}/pages", response_model=list[PageRead])
 def get_pages(document_id: str, db: Session = Depends(get_db)) -> list[Page]:
     document = db.get(Document, document_id)
@@ -293,12 +322,26 @@ def get_blocks(document_id: str, db: Session = Depends(get_db)) -> list[Block]:
 
 @router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_document(document_id: str, db: Session = Depends(get_db)) -> None:
-    document = db.get(Document, document_id)
+    document = db.scalars(select(Document).where(Document.id == document_id).with_for_update()).first()
     if document is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found.")
 
-    storage_path = Path(document.storage_url)
+    if document.status in {"uploaded", "queued", "processing", "normalizing"}:
+        raise HTTPException(status_code=409, detail="Tài liệu đang xử lý. Vui lòng đợi trước khi xóa.")
+
+    settings = get_settings()
+    targets = []
+    for root in (settings.upload_root, settings.mineru_output_root):
+        target = root / document.id
+        if target.is_symlink() or target.resolve().parent != root.resolve():
+            raise HTTPException(status_code=400, detail="Invalid document storage path.")
+        targets.append(target)
+    try:
+        for target in targets:
+            if target.exists():
+                shutil.rmtree(target)
+    except OSError as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Không thể dọn file tài liệu. Vui lòng thử lại.") from exc
     db.delete(document)
     db.commit()
-    if storage_path.exists():
-        shutil.rmtree(storage_path.parent, ignore_errors=True)

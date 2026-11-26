@@ -26,7 +26,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(message);
   }
 
+  if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
+}
+
+export function deleteDocument(documentId: string): Promise<void> {
+  return request<void>(`/documents/${documentId}`, { method: "DELETE" });
 }
 
 export async function uploadDocument(file: File): Promise<UploadResponse> {
@@ -63,4 +68,8 @@ export async function getDocumentPreview(
 
 export function getDocumentFileUrl(documentId: string): string {
   return `${API_BASE_URL}/documents/${documentId}/file`;
+}
+
+export function retryDocument(documentId: string): Promise<DocumentStatusResponse> {
+  return request<DocumentStatusResponse>(`/documents/${documentId}/retry`, { method: "POST" });
 }

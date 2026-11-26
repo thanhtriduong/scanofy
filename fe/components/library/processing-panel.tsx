@@ -58,7 +58,7 @@ export function ProcessingPanel({ document, status }: ProcessingPanelProps) {
             <div className="mt-4 flex justify-end">
               <Link
                 href={`/documents/${document.id}`}
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover"
+                className="inline-flex h-9 items-center justify-center gap-2 scanofy-control bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover"
               >
                 <Eye className="h-4 w-4" aria-hidden="true" />
                 Mở bản xem trước

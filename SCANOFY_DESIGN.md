@@ -1,4 +1,17 @@
-# Scanofy Design System — v0.1
+# Scanofy Design System — v0.2
+
+## Visual update — 2026-11-25
+
+Applies to Library, Document Reader and future Knowledge/Learning interfaces. Landing page sections are out of scope.
+These values supersede the initial visual tokens below; product principles and source-grounded interactions remain applicable.
+
+- Font: Host Grotesk variable, locally served through `next/font`, including Vietnamese. Display and body share the same family.
+- Background `#ffffff`; surface `#f7f6f6`; primary text `#201f20`; secondary text `#494949`; metadata `#606060`.
+- Primary action and selected state `#2e5bff`; hover `#2449d6`; inverse label `#fcfcfd`; border `#e0e0df`.
+- Actions and icon controls use the shared `scanofy-control` pill shape. Document rows remain soft rectangles; PDF overlay regions retain exact bbox geometry.
+- Flat cards with 8px corners, restrained borders for workspace structure, no decorative elevation. PDF page shadows may remain to separate the original document from the viewer canvas.
+- Keep workspace typography compact: page titles 24/32, sections 18/26, UI 14/20, metadata 12/16, extracted reading text 16/26. The landing-page 48px headline scale is reserved for the future landing page.
+- Keep continuous PDF scrolling, page tracking, source selection and existing processing interactions.
 
 > Product direction: **Calm Intelligence**. Scanofy is a document-centered knowledge and learning workspace, not a generic SaaS dashboard.
 > Status: initial specification; verify against actual frontend framework, accessibility requirements, and user testing.

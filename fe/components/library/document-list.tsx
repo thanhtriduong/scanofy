@@ -59,7 +59,7 @@ export function DocumentList({
                 }`}
               >
                 <span className="flex items-start gap-3">
-                  <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md border border-border bg-background text-muted-foreground">
+                  <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center scanofy-control border border-border bg-background text-muted-foreground">
                     <FileText className="h-4 w-4" aria-hidden="true" />
                   </span>
                   <span className="min-w-0 flex-1">

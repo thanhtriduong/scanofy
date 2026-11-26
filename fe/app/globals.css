@@ -2,24 +2,27 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #18181b;
-  --surface: #f8fafc;
+  --foreground: #201f20;
+  --surface: #f7f6f6;
   --surface-raised: #ffffff;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --border: #e4e4e7;
-  --border-strong: #d4d4d8;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-foreground: #ffffff;
+  --muted: #f0efef;
+  --muted-foreground: #606060;
+  --secondary-foreground: #494949;
+  --border: #e0e0df;
+  --border-strong: #c8c7c7;
+  --primary: #2e5bff;
+  --primary-hover: #2449d6;
+  --primary-foreground: #fcfcfd;
+  --radius-control: 9999px;
+  --radius-surface: 8px;
   --success: #15803d;
   --success-soft: #f0fdf4;
   --warning: #a16207;
   --warning-soft: #fefce8;
   --danger: #b91c1c;
   --danger-soft: #fef2f2;
-  --info: #1d4ed8;
-  --info-soft: #eff6ff;
+  --info: #2449d6;
+  --info-soft: #eef2ff;
 }
 
 @theme inline {
@@ -42,7 +45,7 @@
   --color-danger-soft: var(--danger-soft);
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
-  --font-sans: Arial, Helvetica, sans-serif;
+  --font-sans: var(--font-host-grotesk), Arial, Helvetica, sans-serif;
   --font-mono: Consolas, "Liberation Mono", monospace;
 }
 
@@ -58,7 +61,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-host-grotesk), Arial, Helvetica, sans-serif;
   font-size: 16px;
 }
 
@@ -81,8 +84,27 @@ label[for] {
 }
 
 ::selection {
-  background: #dbeafe;
-  color: #172554;
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+/* Shared action shape; document rows and PDF hit regions keep their geometry. */
+.scanofy-control {
+  border-radius: var(--radius-control);
+}
+
+html {
+  scrollbar-color: var(--border-strong) var(--surface);
+  scrollbar-width: thin;
+}
+
+input, textarea {
+  caret-color: var(--primary);
+}
+
+label:has(input:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {

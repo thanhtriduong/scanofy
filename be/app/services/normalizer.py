@@ -1,3 +1,6 @@
+import math
+
+
 class Normalizer:
     """Normalize parser output into Scanofy's page and block contract."""
 
@@ -105,6 +108,9 @@ class Normalizer:
     def _valid_bbox(self, value: object) -> list[float] | None:
         if not isinstance(value, list) or len(value) != 4:
             return None
-        if not all(isinstance(coordinate, (int, float)) for coordinate in value):
+        if not all(type(coordinate) in (int, float) and math.isfinite(coordinate) for coordinate in value):
+            return None
+        left, top, right, bottom = value
+        if not (0 <= left < right <= 1 and 0 <= top < bottom <= 1):
             return None
         return [float(coordinate) for coordinate in value]

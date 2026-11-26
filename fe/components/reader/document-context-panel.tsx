@@ -165,7 +165,7 @@ function SelectedBlockPanel({
           type="button"
           onClick={onClose}
           aria-label="Đóng chi tiết block"
-          className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-surface hover:text-foreground"
+          className="grid h-8 w-8 place-items-center scanofy-control text-muted-foreground hover:bg-surface hover:text-foreground"
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -182,7 +182,7 @@ function SelectedBlockPanel({
           type="button"
           onClick={() => void copyText()}
           disabled={!block.text}
-          className="mt-3 inline-flex h-9 w-full items-center justify-center gap-2 rounded-md border border-border text-sm font-medium transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-3 inline-flex h-9 w-full items-center justify-center gap-2 scanofy-control border border-border text-sm font-medium transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40"
         >
           {copied ? (
             <Check className="h-4 w-4 text-success" aria-hidden="true" />
@@ -226,7 +226,7 @@ function DeferredAction({
       type="button"
       disabled
       title="Sẽ có trong batch Learning"
-      className="flex h-10 cursor-not-allowed items-center gap-3 rounded-md border border-border px-3 text-sm text-muted-foreground opacity-60"
+      className="flex h-10 cursor-not-allowed items-center gap-3 scanofy-control border border-border px-3 text-sm text-muted-foreground opacity-60"
     >
       <Icon className="h-4 w-4" aria-hidden="true" />
       {label}

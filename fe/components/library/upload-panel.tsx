@@ -62,7 +62,7 @@ export function UploadPanel({
         <button
           type="submit"
           disabled={!selectedFile || isUploading}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-45"
+          className="inline-flex h-10 items-center justify-center gap-2 scanofy-control bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-45"
         >
           {isUploading ? (
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />

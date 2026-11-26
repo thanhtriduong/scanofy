@@ -60,6 +60,8 @@ export type DocumentPreviewPage = {
 
 export type DocumentPreviewBlock = {
   id: string;
+  parse_run_id?: string | null;
+  heading_level?: number | null;
   page_number: number;
   block_type: string;
   text: string | null;
@@ -75,4 +77,5 @@ export type DocumentPreviewResponse = {
   pages: DocumentPreviewPage[];
   blocks: DocumentPreviewBlock[];
   source_engine: string | null;
+  parse_run_id?: string | null;
 };

@@ -156,12 +156,34 @@ export function PdfDocumentViewer({
   }, [onPageChange, pdf]);
 
   useEffect(() => {
-    if (!pdf || pageNumber === visiblePageRef.current) return;
+    if (!pdf || selectedBlockId || pageNumber === visiblePageRef.current) return;
     const target = pageElementsRef.current.get(pageNumber);
     if (!target) return;
     navigationTargetRef.current = pageNumber;
     target.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [pageNumber, pdf]);
+  }, [pageNumber, pdf, selectedBlockId]);
+
+  useEffect(() => {
+    if (!selectedBlockId || !viewerRef.current) return;
+    const viewer = viewerRef.current;
+    const region = Array.from(viewer.querySelectorAll<HTMLElement>("[data-block-id]"))
+      .find((element) => element.dataset.blockId === selectedBlockId);
+    if (!region) return;
+    const block = blocks.find((item) => item.id === selectedBlockId);
+    if (!block) return;
+    navigationTargetRef.current = block.page_number;
+    const scrollToSource = () => {
+      const target = region.getBoundingClientRect();
+      const container = viewer.getBoundingClientRect();
+      viewer.scrollTo({
+        top: viewer.scrollTop + target.top - container.top - viewer.clientHeight / 3,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
+    };
+    const observer = new ResizeObserver(scrollToSource);
+    observer.observe(region);
+    return () => observer.disconnect();
+  }, [blocks, pdf, selectedBlockId]);
 
   const pageCount = pdf?.numPages ?? 0;
   const pages = Array.from({ length: pageCount }, (_, index) => index + 1);
@@ -224,7 +246,7 @@ export function PdfDocumentViewer({
             type="button"
             onClick={onToggleGeometry}
             aria-pressed={showGeometry}
-            className={`ml-1 inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors ${
+            className={`ml-1 inline-flex h-9 items-center gap-2 scanofy-control border px-3 text-sm font-medium transition-colors ${
               showGeometry
                 ? "border-primary/35 bg-info-soft text-primary"
                 : "border-border text-muted-foreground hover:bg-surface hover:text-foreground"
@@ -242,6 +264,7 @@ export function PdfDocumentViewer({
 
       <div
         ref={viewerRef}
+        data-pdf-scroll
         className="relative flex-1 overflow-auto bg-muted px-4 py-6 sm:px-8"
       >
         {error ? (
@@ -309,6 +332,20 @@ function PdfPage({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const renderTaskRef = useRef<RenderTask | null>(null);
   const [isRendering, setIsRendering] = useState(true);
+  const [nearViewport, setNearViewport] = useState(false);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setNearViewport(true);
+        observer.disconnect();
+      }
+    }, { root: canvas.closest("[data-pdf-scroll]"), rootMargin: "900px" });
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     let disposed = false;
@@ -322,6 +359,9 @@ function PdfPage({
         const viewport = page.getViewport({ scale: zoom });
         const outputScale = window.devicePixelRatio || 1;
         const canvas = canvasRef.current;
+        canvas.style.width = `${Math.floor(viewport.width)}px`;
+        canvas.style.height = `${Math.floor(viewport.height)}px`;
+        if (!nearViewport) return;
         const context = canvas.getContext("2d");
         if (!context) return;
 
@@ -357,7 +397,7 @@ function PdfPage({
       disposed = true;
       renderTaskRef.current?.cancel();
     };
-  }, [pageNumber, pdf, zoom]);
+  }, [nearViewport, pageNumber, pdf, zoom]);
 
   const geometricBlocks = blocks.filter(
     (block) =>
@@ -404,6 +444,7 @@ function BlockRegion({
     <button
       type="button"
       onClick={onSelect}
+      data-block-id={block.id}
       aria-label={`Chọn ${formatBlockType(block.block_type)} trên trang ${block.page_number}`}
       className={`absolute transition-colors focus:z-20 ${
         selected
@@ -433,7 +474,7 @@ function PdfError({ message, fileUrl }: { message: string; fileUrl: string }) {
         href={fileUrl}
         target="_blank"
         rel="noreferrer"
-        className="mt-4 inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground"
+        className="mt-4 inline-flex h-9 items-center scanofy-control bg-primary px-4 text-sm font-semibold text-primary-foreground"
       >
         Mở file gốc
       </a>
@@ -459,7 +500,7 @@ function ToolbarButton({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="grid h-9 w-9 place-items-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+      className="grid h-9 w-9 place-items-center scanofy-control border border-border text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
     >
       {children}
     </button>

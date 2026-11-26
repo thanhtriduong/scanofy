@@ -36,7 +36,7 @@ export function documentStatusLabel(status: string) {
     awaiting_ocr: "Chờ OCR",
     parsed: "Sẵn sàng",
     completed: "Hoàn tất",
-    failed: "Thất bại",
+    failed: "Phân tích lỗi",
   };
   return labels[status] ?? status.replaceAll("_", " ");
 }

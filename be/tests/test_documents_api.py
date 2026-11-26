@@ -4,10 +4,11 @@ import pytest
 
 from app.core.config import get_settings
 from app.models.ocr_output import OCROutput
+from app.models.document import Document
 
 
 @pytest.mark.anyio
-async def test_upload_and_read_document_status(client) -> None:
+async def test_upload_and_read_document_status(client, db_session) -> None:
     response = await client.post(
         "/documents/upload",
         files={"file": ("lesson.pdf", b"%PDF-1.4 test", "application/pdf")},
@@ -36,9 +37,18 @@ async def test_upload_and_read_document_status(client) -> None:
     stored_path = Path(document["storage_url"])
     assert stored_path.exists()
 
+    assert (await client.delete(f"/documents/{document_id}")).status_code == 409
+    db_session.get(Document, document_id).status = "parsed"
+    db_session.commit()
+    output_dir = get_settings().mineru_output_root / document_id
+    output_dir.mkdir(parents=True)
+    (output_dir / "result.json").write_text("{}", encoding="utf-8")
     delete_response = await client.delete(f"/documents/{document_id}")
     assert delete_response.status_code == 204
     assert not stored_path.parent.exists()
+    assert not output_dir.exists()
+    assert (await client.get(f"/documents/{document_id}")).status_code == 404
+    assert (await client.get("/documents")).json() == []
 
 
 @pytest.mark.anyio
@@ -80,6 +90,24 @@ async def test_unknown_document_returns_not_found(client) -> None:
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Document not found."
+
+
+@pytest.mark.anyio
+async def test_retry_preserves_original_and_rejects_duplicate(client, db_session) -> None:
+    uploaded = await client.post(
+        "/documents/upload",
+        files={"file": ("lesson.pdf", b"%PDF-1.4 test", "application/pdf")},
+    )
+    document_id = uploaded.json()["document"]["id"]
+    document = db_session.get(Document, document_id)
+    document.status = "failed"
+    db_session.commit()
+    assert (await client.get(f"/documents/{document_id}/file")).status_code == 200
+    retried = await client.post(f"/documents/{document_id}/retry")
+    assert retried.status_code == 200
+    assert retried.json()["status"] == "uploaded"
+    assert retried.json()["latest_job"]["status"] == "queued"
+    assert (await client.post(f"/documents/{document_id}/retry")).status_code == 409
 
 
 @pytest.mark.anyio

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from app.db.session import SessionLocal
 from app.models.document import Document
@@ -90,8 +91,18 @@ class DocumentProcessingService:
             self.db.commit()
 
     def _persist_normalized_output(self, document_id: str, normalized: dict) -> None:
+        # Replace the normalized snapshot in one transaction. Reuse source IDs
+        # for unchanged page/order positions so repeat normalization is stable.
+        existing_pages = {page.page_number: page for page in self.db.scalars(
+            select(Page).where(Page.document_id == document_id)
+        ).all()}
+        existing_blocks = {(block.page_number, block.reading_order): block for block in self.db.scalars(
+            select(Block).where(Block.document_id == document_id)
+        ).all()}
+        retained_pages = set()
+        retained_blocks = set()
         for page_data in normalized.get("pages", []):
-            page = Page(
+            page = existing_pages.get(page_data["page_number"]) or Page(
                 document_id=document_id,
                 page_number=page_data["page_number"],
                 width=page_data.get("width"),
@@ -99,14 +110,19 @@ class DocumentProcessingService:
                 image_url=page_data.get("image_url"),
                 raw_text=page_data.get("raw_text"),
             )
+            for field in ("width", "height", "image_url", "raw_text"):
+                setattr(page, field, page_data.get(field))
             self.db.add(page)
             self.db.flush()
+            retained_pages.add(page.page_number)
 
             for block_data in normalized.get("blocks", []):
                 if block_data.get("page_number") != page.page_number:
                     continue
-                self.db.add(
-                    Block(
+                key = (page.page_number, block_data.get("reading_order"))
+                block = existing_blocks.get(key)
+                if block is None:
+                    block = Block(
                         document_id=document_id,
                         page_id=page.id,
                         page_number=block_data["page_number"],
@@ -119,8 +135,22 @@ class DocumentProcessingService:
                         source_engine=block_data.get("source_engine"),
                         raw_json=block_data.get("raw_json"),
                     )
-                )
-        self.db.commit()
+                else:
+                    if block.text != block_data.get("text"):
+                        block.corrected_text = None
+                        block.correction_confidence = None
+                    for field in ("block_type", "text", "bbox", "confidence", "source_engine", "raw_json"):
+                        setattr(block, field, block_data.get(field))
+                self.db.add(block)
+                retained_blocks.add(key)
+        for key, block in existing_blocks.items():
+            if key not in retained_blocks:
+                self.db.delete(block)
+        self.db.flush()
+        for number, page in existing_pages.items():
+            if number not in retained_pages:
+                self.db.delete(page)
+        self.db.flush()
 
     def _run_async(self, coroutine):
         return asyncio.run(coroutine)

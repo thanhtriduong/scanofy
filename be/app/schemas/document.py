@@ -99,6 +99,8 @@ class DocumentPreviewPage(BaseModel):
 
 class DocumentPreviewBlock(BaseModel):
     id: str
+    parse_run_id: str | None = None
+    heading_level: int | None = None
     page_number: int
     block_type: str
     text: str | None
@@ -114,3 +116,4 @@ class DocumentPreviewResponse(BaseModel):
     pages: list[DocumentPreviewPage]
     blocks: list[DocumentPreviewBlock]
     source_engine: str | None
+    parse_run_id: str | None = None
