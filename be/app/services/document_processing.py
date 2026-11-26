@@ -14,20 +14,16 @@ from app.models.page import Page
 from app.models.block import Block
 from app.models.span import Span
 from app.services.file_profiler import FileProfiler
-from app.services.normalizer import Normalizer
-from app.services.ocr_engines.mineru_adapter import MinerUAdapter
-from app.services.router import DocumentRouter
+from app.services.engine_orchestrator import EngineOrchestrator, default_orchestrator
 
 
 class DocumentProcessingService:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, orchestrator: EngineOrchestrator | None = None):
         self.db = db
         self.profiler = FileProfiler()
-        self.router = DocumentRouter()
-        self.normalizer = Normalizer()
-        self.mineru = MinerUAdapter()
+        self.orchestrator = orchestrator or default_orchestrator()
 
-    def run_placeholder_pipeline(self, document_id: str, job_id: str, file_path: Path) -> None:
+    def run_pipeline(self, document_id: str, job_id: str, file_path: Path) -> None:
         job = self.db.get(DocumentJob, job_id)
         document = self.db.get(Document, document_id)
         if job is None or document is None:
@@ -46,20 +42,29 @@ class DocumentProcessingService:
             job.current_step = "routing"
             self.db.commit()
 
-            document.router_decision = self.router.choose_engine(profile)
+            plan = self.orchestrator.plan(profile)
+            document.router_decision = {
+                "engine": plan.engine, "reason": plan.reason, "fallback_engine": None,
+                "plan": plan.to_dict(),
+            }
             self.db.commit()
 
-            engine = document.router_decision.get("engine")
-            if engine == "mineru":
-                job.current_step = "mineru_parsing"
+            if plan.status == "ready":
+                job.current_step = f"{plan.engine}_parsing"
                 self.db.commit()
-                ocr_result = self._run_async(self.mineru.parse(file_path))
-                MinerUAdapter.validate_output(ocr_result.get("raw_output"))
+                ocr_result = self._run_async(self.orchestrator.execute(plan, file_path))
+
+                raw = dict(ocr_result["raw_output"])
+                raw["_scanofy"] = {
+                    **raw.get("_scanofy", {}),
+                    "orchestration": {"job_id": job.id, "plan": plan.to_dict()},
+                }
+                ocr_result = {**ocr_result, "raw_output": raw}
 
                 ocr_output = OCROutput(
                     document_id=document.id,
-                    engine="mineru",
-                    raw_output=ocr_result.get("raw_output") or ocr_result,
+                    engine=plan.engine,
+                    raw_output=ocr_result["raw_output"],
                     markdown_output=ocr_result.get("markdown_output"),
                     average_confidence=ocr_result.get("average_confidence"),
                 )
@@ -70,9 +75,9 @@ class DocumentProcessingService:
                 document.status = "normalizing"
                 self.db.commit()
 
-                normalized = self.normalizer.normalize(ocr_result)
+                normalized = self.orchestrator.normalize(ocr_result)
                 if profile.get("page_count") is not None and len(normalized["pages"]) != profile["page_count"]:
-                    raise RuntimeError("MinerU page count differs from the original PDF; normalized output was not published.")
+                    raise RuntimeError("Engine page count differs from the original document; normalized output was not published.")
                 measured_pages = {page["page_number"]: page for page in profile.get("pages", [])}
                 for page in normalized.get("pages", []):
                     measured = measured_pages.get(page["page_number"])
@@ -184,9 +189,9 @@ class DocumentProcessingService:
         return asyncio.run(coroutine)
 
 
-def run_placeholder_processing(document_id: str, job_id: str, file_path: str) -> None:
+def run_document_processing(document_id: str, job_id: str, file_path: str) -> None:
     db = SessionLocal()
     try:
-        DocumentProcessingService(db).run_placeholder_pipeline(document_id, job_id, Path(file_path))
+        DocumentProcessingService(db).run_pipeline(document_id, job_id, Path(file_path))
     finally:
         db.close()

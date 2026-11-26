@@ -54,7 +54,7 @@ async def client(
     app.dependency_overrides[get_db] = override_get_db
     monkeypatch.setattr(
         documents_api,
-        "run_placeholder_processing",
+        "run_document_processing",
         skip_background_processing,
     )
 

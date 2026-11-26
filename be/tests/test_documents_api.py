@@ -8,6 +8,18 @@ from app.models.document import Document
 
 
 @pytest.mark.anyio
+async def test_preview_keeps_historical_markdown_output_readable(client, db_session):
+    document = Document(filename="legacy.pdf", file_type="pdf", storage_url="unused", status="parsed")
+    db_session.add(document)
+    db_session.flush()
+    db_session.add(OCROutput(document_id=document.id, engine="mineru", raw_output={"pdf_info": []}, markdown_output="# Legacy lesson"))
+    db_session.commit()
+    response = await client.get(f"/documents/{document.id}/preview")
+    assert response.status_code == 200
+    assert response.json()["blocks"][0]["text"] == "# Legacy lesson"
+
+
+@pytest.mark.anyio
 async def test_artifact_access_is_manifest_and_document_scoped(client, db_session):
     response = await client.post("/documents/upload", files={"file": ("sample.pdf", b"%PDF-test", "application/pdf")})
     document_id = response.json()["document"]["id"]

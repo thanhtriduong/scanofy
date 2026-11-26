@@ -28,8 +28,8 @@ from app.schemas.document import (
     PageRead,
     SpanRead,
 )
-from app.services.document_processing import run_placeholder_processing
-from app.services.normalizer import Normalizer
+from app.services.document_processing import run_document_processing
+from app.services.engine_orchestrator import default_orchestrator
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -125,7 +125,7 @@ async def upload_document(
     finally:
         await file.close()
 
-    background_tasks.add_task(run_placeholder_processing, document.id, job.id, str(stored_path))
+    background_tasks.add_task(run_document_processing, document.id, job.id, str(stored_path))
     return DocumentUploadResponse(document=document, job=job)
 
 
@@ -177,13 +177,14 @@ def get_document_preview(
     ).first()
 
     if latest_output is not None:
-        normalized = Normalizer().normalize(
+        normalized = default_orchestrator().normalize(
             {
                 "engine": latest_output.engine,
                 "raw_output": latest_output.raw_output or {},
                 "markdown_output": latest_output.markdown_output,
                 "average_confidence": latest_output.average_confidence,
-            }
+            },
+            validate_raw=False,  # Preserve read-only preview of historical Markdown snapshots.
         )
         measured_pages = {page["page_number"]: page for page in (document.profile or {}).get("pages", [])}
         for page in normalized.get("pages", []):
@@ -319,7 +320,7 @@ def retry_document(
     db.add(job)
     db.commit()
     db.refresh(job)
-    background_tasks.add_task(run_placeholder_processing, document.id, job.id, str(source))
+    background_tasks.add_task(run_document_processing, document.id, job.id, str(source))
     return DocumentStatusResponse(
         document_id=document.id, status=document.status, profile=document.profile,
         router_decision=document.router_decision, latest_job=job,

@@ -73,3 +73,7 @@ Each parse retains its own artifacts, source hash and CLI version. Missing or
 invalid output fails explicitly; the original document remains readable.
 See [MinerU pipeline and recovery commands](../docs/MINERU_PIPELINE.md) for
 supported artifacts, API access, renormalization, real smoke tests and diagrams.
+
+MinerU now executes through the shared engine registry/orchestrator. See
+[orchestration architecture and extension contract](../docs/ENGINE_ORCHESTRATION.md).
+Other engines remain unintegrated; their routes retain `awaiting_ocr`.

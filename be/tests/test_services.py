@@ -45,10 +45,10 @@ def test_pipeline_publishes_parsed_output_after_normalization(db_session, tmp_pa
     db_session.add(job)
     db_session.commit()
     async def fake_parse(_path):
-        return {"engine": "mineru", "raw_output": {"pages": [{"page_idx": 0, "blocks": [{"type": "text", "index": 0, "bbox": [0, 0, 1, 1], "content": "Bài học"}]}]}}
+        return {"engine": "mineru", "status": "completed", "raw_output": {"pages": [{"page_idx": 0, "blocks": [{"type": "text", "index": 0, "bbox": [0, 0, 1, 1], "content": "Bài học"}]}]}}
     service = DocumentProcessingService(db_session)
-    monkeypatch.setattr(service.mineru, "parse", fake_parse)
-    service.run_placeholder_pipeline(document.id, job.id, source)
+    monkeypatch.setattr(service.orchestrator.registry.require("mineru").adapter, "parse", fake_parse)
+    service.run_pipeline(document.id, job.id, source)
     assert document.status == "parsed"
     assert job.status == "completed"
     assert db_session.scalars(select(Page)).one().page_number == 1

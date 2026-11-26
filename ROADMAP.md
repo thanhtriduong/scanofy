@@ -157,6 +157,9 @@ block có bbox; API trả dữ liệu đủ để vẽ overlay.
 
 **Mục tiêu:** định tuyến đúng tài liệu sang engine phù hợp.
 
+- [x] Nền tảng Engine Registry/Orchestrator, execution plan và envelope chung; MinerU đi qua luồng chung. Xem `docs/ENGINE_ORCHESTRATION.md`.
+- [x] Kiểm chứng engine giả có raw format riêng dùng chung persistence; giữ routing/API hiện có.
+- [ ] Khái quát hóa artifact storage, thêm task theo trang/vùng, lịch sử attempts và worker/queue bền vững theo từng batch.
 - [ ] PaddleOCR adapter cho scan và ảnh văn bản in.
 - [ ] Chandra adapter cho ảnh chữ viết tay/layout phức tạp.
 - [ ] Vintern-1B adapter hoặc remote inference wrapper.
