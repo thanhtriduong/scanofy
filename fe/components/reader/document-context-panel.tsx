@@ -47,7 +47,7 @@ export function DocumentContextPanel({
           onClose={onClearSelection}
         />
       ) : (
-        <OutlinePanel outline={outline} blocks={blocks} onNavigate={onNavigate} />
+        <OutlinePanel outline={outline} blocks={blocks} sourceEngine={sourceEngine} onNavigate={onNavigate} />
       )}
     </aside>
   );
@@ -56,10 +56,12 @@ export function DocumentContextPanel({
 function OutlinePanel({
   outline,
   blocks,
+  sourceEngine,
   onNavigate,
 }: {
   outline: DocumentPreviewBlock[];
   blocks: DocumentPreviewBlock[];
+  sourceEngine: string | null;
   onNavigate: (block: DocumentPreviewBlock) => void;
 }) {
   const pagesWithContent = new Set(blocks.map((block) => block.page_number)).size;
@@ -77,6 +79,9 @@ function OutlinePanel({
         <p className="mt-1 text-xs text-muted-foreground">
           Chọn một mục để mở đúng trang và nguồn.
         </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Nguồn trích xuất: {formatEngine(sourceEngine)}
+        </p>
       </div>
 
       <nav aria-label="Mục lục tài liệu" className="max-h-[calc(100vh-13rem)] overflow-y-auto p-3">
@@ -85,7 +90,9 @@ function OutlinePanel({
             <BookOpen className="mx-auto h-6 w-6 text-muted-foreground" aria-hidden="true" />
             <p className="mt-3 text-sm font-medium">Không tìm thấy tiêu đề</p>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              MinerU chưa nhận diện heading cho tài liệu này.
+              {sourceEngine === "paddleocr"
+                ? "Kết quả OCR hiện gồm các dòng văn bản, chưa có phân loại tiêu đề để tạo mục lục."
+                : "Dữ liệu trích xuất chưa có tiêu đề để tạo mục lục."}
             </p>
           </div>
         ) : (
@@ -205,7 +212,7 @@ function SelectedBlockPanel({
         </div>
 
         <dl className="mt-6 space-y-2 rounded-lg border border-border p-3 text-xs">
-          <MetadataRow label="Engine" value={sourceEngine ?? block.source_engine ?? "—"} />
+          <MetadataRow label="Engine" value={formatEngine(block.source_engine ?? sourceEngine)} />
           <MetadataRow label="Reading order" value={block.reading_order?.toString() ?? "—"} />
           <MetadataRow label="Tọa độ" value={block.coordinate_system ?? "Không có"} />
         </dl>
@@ -268,4 +275,14 @@ function formatBlockType(type: string): string {
     footer: "Chân trang",
   };
   return labels[type] ?? type.replaceAll("_", " ");
+}
+
+function formatEngine(engine: string | null): string {
+  const labels: Record<string, string> = {
+    mineru: "MinerU",
+    paddleocr: "PaddleOCR",
+    chandra: "Chandra",
+    vintern: "Vintern",
+  };
+  return engine ? labels[engine] ?? engine : "Chưa xác định";
 }

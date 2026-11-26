@@ -200,7 +200,7 @@ def get_document_preview(
             DocumentPreviewBlock(
                 id=f"{latest_output.id}:page-{block['page_number']}-block-{position}",
                 parse_run_id=latest_output.id,
-                heading_level=(block.get("raw_json") or {}).get("level"),
+                heading_level=block.get("heading_level"),
                 spans=block.get("spans", []),
                 is_handwritten=block.get("is_handwritten"),
                 needs_review=block.get("needs_review", False),
@@ -212,7 +212,7 @@ def get_document_preview(
                 reading_order=block.get("reading_order"),
                 confidence=block.get("confidence"),
                 source_engine=block.get("source_engine"),
-                coordinate_system=(block.get("raw_json") or {}).get("coordinate_system"),
+                coordinate_system=block.get("coordinate_system"),
             )
             for position, block in enumerate(normalized.get("blocks", []), 1)
         ]

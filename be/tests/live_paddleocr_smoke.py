@@ -71,6 +71,7 @@ def main():
                 preview = client.get(f"/documents/{document_id}/preview")
                 preview.raise_for_status()
                 assert len(preview.json()["pages"]) == expected_pages
+                assert all(block["coordinate_system"] == "normalized_0_1" for block in preview.json()["blocks"])
                 outputs = client.get(f"/documents/{document_id}/ocr-output").json()
                 output = outputs[0]
                 meta = output["raw_output"]["_scanofy"]

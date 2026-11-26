@@ -8,6 +8,28 @@ from app.models.document import Document
 
 
 @pytest.mark.anyio
+async def test_paddle_preview_retains_canonical_geometry(client, db_session):
+    document = Document(filename="scan.pdf", file_type="pdf", storage_url="unused", status="parsed")
+    db_session.add(document)
+    db_session.flush()
+    raw = {"schema": "scanofy.paddleocr.v1", "pages": [{
+        "page_number": 1, "width": 200, "height": 100,
+        "result": {"rec_texts": ["Thông báo"], "rec_scores": [0.95],
+                   "rec_polys": [[[20, 10], [180, 10], [180, 30], [20, 30]]]},
+    }]}
+    db_session.add(OCROutput(document_id=document.id, engine="paddleocr", raw_output=raw))
+    db_session.commit()
+    response = await client.get(f"/documents/{document.id}/preview")
+    assert response.status_code == 200
+    preview = response.json()
+    assert preview["source_engine"] == "paddleocr"
+    block = preview["blocks"][0]
+    assert block["bbox"] == [0.1, 0.1, 0.9, 0.3]
+    assert block["coordinate_system"] == "normalized_0_1"
+    assert block["spans"][0]["coordinate_system"] == block["coordinate_system"]
+
+
+@pytest.mark.anyio
 async def test_preview_keeps_historical_markdown_output_readable(client, db_session):
     document = Document(filename="legacy.pdf", file_type="pdf", storage_url="unused", status="parsed")
     db_session.add(document)
