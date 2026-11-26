@@ -101,7 +101,7 @@ Tài liệu đầu vào
 
 - [ ] Chốt `Page` schema: page number, width, height, source image.
 - [ ] Chốt `Block` schema: type, text, bbox, reading order, confidence, engine.
-- [ ] Bổ sung `Span` model/schema và quan hệ với block.
+- [x] Bổ sung `Span` model/schema, quan hệ với block và API lọc theo trang/block.
 - [ ] Thêm cờ `is_handwritten`, `needs_review` và `quality_score`.
 - [ ] Quy định hệ tọa độ bbox và cách scale lên PDF.js viewer.
 - [ ] Quy định mapping block type giữa MinerU, PaddleOCR, Chandra và Vintern.
@@ -277,6 +277,8 @@ Thứ tự thực hiện gần nhất:
 ## 8. Nhật ký tiến độ
 
 ### Tuần hiện tại
+
+- Data contract v1: `docs/DATA_CONTRACT.md`; model/API Span và migration `202611260001` đã áp dụng. Span giữ nội dung, thứ tự, tham chiếu OCR output; geometry thiếu giữ null. Fixture tổng hợp tiếng Việt và test normalize lặp, cascade, API filters, migration lên/xuống đạt. Tài liệu cũ chưa backfill; text layer, version capture và rotation transforms vẫn đang chờ.
 
 - Reader thumbnail panel: thay nút trước/sau bằng nút “Các trang”, ảnh thu nhỏ PDF tải gần viewport, chọn thumbnail cuộn tới trang; panel đóng/mở và đánh dấu trang hiện tại. Browser QA xác nhận mở, chọn trang 3 và đóng; console không có lỗi.
 

@@ -58,10 +58,25 @@ export type DocumentPreviewPage = {
   raw_text: string | null;
 };
 
+export type DocumentSpan = {
+  id: string;
+  document_id: string;
+  block_id: string;
+  parse_run_id: string | null;
+  page_number: number;
+  reading_order: number;
+  span_type: string;
+  text: string | null;
+  bbox: number[] | null;
+  coordinate_system: "normalized_0_1" | null;
+  confidence: number | null;
+};
+
 export type DocumentPreviewBlock = {
   id: string;
   parse_run_id?: string | null;
   heading_level?: number | null;
+  spans?: Pick<DocumentSpan, "reading_order" | "span_type" | "text" | "bbox" | "coordinate_system">[];
   page_number: number;
   block_type: string;
   text: string | null;

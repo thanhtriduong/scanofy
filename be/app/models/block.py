@@ -26,4 +26,5 @@ class Block(UUIDPrimaryKeyMixin, Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     document = relationship("Document", back_populates="blocks")
+    spans = relationship("Span", back_populates="block", cascade="all, delete-orphan")
     page = relationship("Page", back_populates="blocks")

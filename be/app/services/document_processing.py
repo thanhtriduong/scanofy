@@ -1,4 +1,5 @@
 import asyncio
+from uuid import uuid5, NAMESPACE_URL
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from app.models.document_job import DocumentJob
 from app.models.ocr_output import OCROutput
 from app.models.page import Page
 from app.models.block import Block
+from app.models.span import Span
 from app.services.file_profiler import FileProfiler
 from app.services.normalizer import Normalizer
 from app.services.ocr_engines.mineru_adapter import MinerUAdapter
@@ -68,7 +70,7 @@ class DocumentProcessingService:
                 self.db.commit()
 
                 normalized = self.normalizer.normalize(ocr_result)
-                self._persist_normalized_output(document.id, normalized)
+                self._persist_normalized_output(document.id, normalized, ocr_output.id)
                 document.status = "parsed"
                 job.current_step = "parsed"
             else:
@@ -90,7 +92,7 @@ class DocumentProcessingService:
                 document.status = "failed"
             self.db.commit()
 
-    def _persist_normalized_output(self, document_id: str, normalized: dict) -> None:
+    def _persist_normalized_output(self, document_id: str, normalized: dict, parse_run_id: str | None = None) -> None:
         # Replace the normalized snapshot in one transaction. Reuse source IDs
         # for unchanged page/order positions so repeat normalization is stable.
         existing_pages = {page.page_number: page for page in self.db.scalars(
@@ -142,6 +144,20 @@ class DocumentProcessingService:
                     for field in ("block_type", "text", "bbox", "confidence", "source_engine", "raw_json"):
                         setattr(block, field, block_data.get(field))
                 self.db.add(block)
+                self.db.flush()
+                previous = {span.reading_order: span for span in block.spans}
+                retained_spans = []
+                for index, span_data in enumerate(block_data.get("spans", [])):
+                    span = previous.get(index) or Span(
+                        id=str(uuid5(NAMESPACE_URL, f"scanofy:{block.id}:span:{index}")),
+                        document_id=document_id, block_id=block.id,
+                        page_number=block.page_number, reading_order=index,
+                    )
+                    span.parse_run_id = parse_run_id
+                    for field in ("span_type", "text", "bbox", "coordinate_system", "confidence", "raw_json"):
+                        setattr(span, field, span_data.get(field))
+                    retained_spans.append(span)
+                block.spans = retained_spans
                 retained_blocks.add(key)
         for key, block in existing_blocks.items():
             if key not in retained_blocks:

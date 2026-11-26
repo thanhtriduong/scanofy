@@ -1,0 +1,12 @@
+{
+  "engine": "mineru",
+  "raw_output": {
+    "pages": [{
+      "page_idx": 0,
+      "blocks": [
+        {"type": "paragraph_title", "index": 0, "level": 2, "bbox": [0.1, 0.1, 0.9, 0.2], "content": [{"type": "text", "content": "Bài học tiếng Việt"}]},
+        {"type": "text", "index": 1, "bbox": [0.1, 0.3, 0.9, 0.5], "content": [{"type": "text", "content": "Công thức: "}, {"type": "inline_equation", "content": "a+b", "bbox": [0.4, 0.3, 0.6, 0.4]}]}
+      ]
+    }]
+  }
+}

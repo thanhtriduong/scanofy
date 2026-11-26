@@ -15,6 +15,7 @@ from app.models.document_job import DocumentJob
 from app.models.ocr_output import OCROutput
 from app.models.page import Page
 from app.models.block import Block
+from app.models.span import Span
 from app.schemas.document import (
     BlockRead,
     DocumentRead,
@@ -25,6 +26,7 @@ from app.schemas.document import (
     DocumentUploadResponse,
     OCROutputRead,
     PageRead,
+    SpanRead,
 )
 from app.services.document_processing import run_placeholder_processing
 from app.services.normalizer import Normalizer
@@ -170,6 +172,7 @@ def get_document_preview(
                 id=f"{latest_output.id}:page-{block['page_number']}-block-{position}",
                 parse_run_id=latest_output.id,
                 heading_level=(block.get("raw_json") or {}).get("level"),
+                spans=block.get("spans", []),
                 page_number=block["page_number"],
                 block_type=block.get("block_type", "unknown"),
                 text=block.get("text"),
@@ -345,3 +348,18 @@ def delete_document(document_id: str, db: Session = Depends(get_db)) -> None:
         raise HTTPException(status_code=500, detail="Không thể dọn file tài liệu. Vui lòng thử lại.") from exc
     db.delete(document)
     db.commit()
+
+
+@router.get("/{document_id}/spans", response_model=list[SpanRead])
+def get_spans(
+    document_id: str, page_number: int | None = None,
+    block_id: str | None = None, db: Session = Depends(get_db),
+) -> list[Span]:
+    if db.get(Document, document_id) is None:
+        raise HTTPException(status_code=404, detail="Document not found.")
+    query = select(Span).join(Block, Span.block_id == Block.id).where(Span.document_id == document_id)
+    if page_number is not None:
+        query = query.where(Span.page_number == page_number)
+    if block_id is not None:
+        query = query.where(Span.block_id == block_id)
+    return list(db.scalars(query.order_by(Span.page_number, Block.reading_order, Span.reading_order)).all())

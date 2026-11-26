@@ -72,6 +72,7 @@ class Normalizer:
                         "reading_order": raw_block.get("index", reading_order),
                         "confidence": raw_block.get("confidence"),
                         "source_engine": source_engine,
+                        "spans": self._normalize_spans(raw_block.get("content")),
                         "raw_json": {
                             **raw_block,
                             "coordinate_system": "normalized_0_1" if bbox else None,
@@ -104,6 +105,32 @@ class Normalizer:
         if isinstance(value, dict):
             return self._extract_text(value.get("content"))
         return ""
+
+    def _normalize_spans(self, content: object) -> list[dict]:
+        if isinstance(content, str):
+            content = [{"type": "text", "content": content}]
+        if not isinstance(content, list):
+            return []
+        spans = []
+        for item in content:
+            if not isinstance(item, dict):
+                continue
+            if isinstance(item.get("content"), list):
+                spans.extend(self._normalize_spans(item["content"]))
+                continue
+            bbox = self._valid_bbox(item.get("bbox"))
+            spans.append({
+                "reading_order": len(spans),
+                "span_type": item.get("type", "unknown"),
+                "text": self._extract_text(item.get("content")) or None,
+                "bbox": bbox,
+                "coordinate_system": "normalized_0_1" if bbox else None,
+                "confidence": item.get("confidence"),
+                "raw_json": item,
+            })
+        for index, span in enumerate(spans):
+            span["reading_order"] = index
+        return spans
 
     def _valid_bbox(self, value: object) -> list[float] | None:
         if not isinstance(value, list) or len(value) != 4:

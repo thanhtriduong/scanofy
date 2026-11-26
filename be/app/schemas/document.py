@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class DocumentJobRead(BaseModel):
@@ -97,10 +97,35 @@ class DocumentPreviewPage(BaseModel):
     raw_text: str | None
 
 
+class SpanRead(BaseModel):
+    id: str
+    document_id: str
+    block_id: str
+    parse_run_id: str | None
+    page_number: int
+    reading_order: int
+    span_type: str
+    text: str | None
+    bbox: list | None
+    coordinate_system: str | None
+    confidence: float | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DocumentPreviewSpan(BaseModel):
+    reading_order: int
+    span_type: str
+    text: str | None
+    bbox: list | None
+    coordinate_system: str | None
+
+
 class DocumentPreviewBlock(BaseModel):
     id: str
     parse_run_id: str | None = None
     heading_level: int | None = None
+    spans: list[DocumentPreviewSpan] = Field(default_factory=list)
     page_number: int
     block_type: str
     text: str | None

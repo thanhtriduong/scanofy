@@ -6,6 +6,7 @@ from app.models.document_tree_node import DocumentTreeNode
 from app.models.generated_feature import GeneratedFeature
 from app.models.ocr_output import OCROutput
 from app.models.page import Page
+from app.models.span import Span
 
 __all__ = [
     "Block",
@@ -16,4 +17,5 @@ __all__ = [
     "GeneratedFeature",
     "OCROutput",
     "Page",
+    "Span",
 ]
